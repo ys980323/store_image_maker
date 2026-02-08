@@ -45,5 +45,9 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>生成したストアイメージを写真アプリへ保存するために使用します。</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>生成したストアイメージを写真アプリへ保存するために使用します。</string>
 </dict>
 </plist>

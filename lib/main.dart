@@ -285,6 +285,8 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
         _showSnackBar('画像を保存しました: $path');
       } on UnsupportedError catch (_) {
         _showSnackBar('PNGは生成しました。現在のプラットフォームは保存非対応です。');
+      } catch (error) {
+        _showSnackBar('PNGは生成しましたが、保存に失敗しました: $error');
       }
     } catch (error) {
       _showSnackBar('画像生成に失敗しました: $error');
