@@ -1,0 +1,107 @@
+import 'dart:math' as math;
+
+import 'package:flutter/material.dart';
+
+enum BackgroundMode { solid, gradient }
+
+enum TitlePosition { top, bottom }
+
+class PaletteColor {
+  const PaletteColor(this.name, this.color);
+
+  final String name;
+  final Color color;
+}
+
+const int kStoreImageOutputWidth = 1290;
+const int kStoreImageOutputHeight = 2796;
+const double kStoreImageOutputAspectRatio =
+    kStoreImageOutputWidth / kStoreImageOutputHeight;
+
+class BezelLayout {
+  static const double bezelPixels = 18.0;
+
+  const BezelLayout({
+    required this.sourceWidth,
+    required this.sourceHeight,
+    required this.outerCornerPixels,
+    required this.screenCornerPixels,
+  });
+
+  final double sourceWidth;
+  final double sourceHeight;
+  final double outerCornerPixels;
+  final double screenCornerPixels;
+
+  double get outerWidth => sourceWidth + bezelPixels * 2;
+  double get outerHeight => sourceHeight + bezelPixels * 2;
+  double get outerAspectRatio => outerWidth / outerHeight;
+  double get sourceAspectRatio => sourceWidth / sourceHeight;
+
+  static const BezelLayout fallback = BezelLayout(
+    sourceWidth: 393,
+    sourceHeight: 852,
+    outerCornerPixels: 34,
+    screenCornerPixels: 24,
+  );
+
+  factory BezelLayout.forScreenshotSize(Size? screenshotSize) {
+    if (screenshotSize == null ||
+        screenshotSize.width <= 0 ||
+        screenshotSize.height <= 0) {
+      return fallback;
+    }
+
+    final width = screenshotSize.width;
+    final height = screenshotSize.height;
+    final outerWidth = width + bezelPixels * 2;
+    final outerHeight = height + bezelPixels * 2;
+    final maxScreenCorner = (math.min(width, height) / 2) - 1;
+    final screenCornerPx = (screenshotSize.shortestSide * 0.1).clamp(
+      8.0,
+      maxScreenCorner,
+    );
+    final maxOuterCorner = (math.min(outerWidth, outerHeight) / 2) - 1;
+    final outerCornerPx = (screenCornerPx + bezelPixels).clamp(
+      screenCornerPx,
+      maxOuterCorner,
+    );
+
+    return BezelLayout(
+      sourceWidth: width,
+      sourceHeight: height,
+      outerCornerPixels: outerCornerPx,
+      screenCornerPixels: screenCornerPx,
+    );
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is BezelLayout &&
+        other.sourceWidth == sourceWidth &&
+        other.sourceHeight == sourceHeight &&
+        other.outerCornerPixels == outerCornerPixels &&
+        other.screenCornerPixels == screenCornerPixels;
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    sourceWidth,
+    sourceHeight,
+    outerCornerPixels,
+    screenCornerPixels,
+  );
+}
+
+const List<PaletteColor> kPaletteColors = [
+  PaletteColor('White', Colors.white),
+  PaletteColor('Black', Colors.black),
+  PaletteColor('Sky', Color(0xFF0EA5E9)),
+  PaletteColor('Navy', Color(0xFF1E3A8A)),
+  PaletteColor('Teal', Color(0xFF0F766E)),
+  PaletteColor('Green', Color(0xFF16A34A)),
+  PaletteColor('Amber', Color(0xFFF59E0B)),
+  PaletteColor('Rose', Color(0xFFE11D48)),
+  PaletteColor('Purple', Color(0xFF7C3AED)),
+  PaletteColor('Orange', Color(0xFFEA580C)),
+];
