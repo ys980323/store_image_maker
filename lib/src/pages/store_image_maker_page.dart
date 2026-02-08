@@ -29,6 +29,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
 
   BackgroundMode _backgroundMode = BackgroundMode.gradient;
   TitlePosition _titlePosition = TitlePosition.top;
+  TitleAlignment _titleAlignment = TitleAlignment.center;
 
   Color _solidColor = const Color(0xFF0EA5E9);
   Color _gradientStartColor = const Color(0xFF1E3A8A);
@@ -206,6 +207,17 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
 
   BezelLayout get _bezelLayout =>
       BezelLayout.forScreenshotSize(_screenshotPixelSize);
+
+  TextAlign get _titleTextAlign {
+    switch (_titleAlignment) {
+      case TitleAlignment.left:
+        return TextAlign.left;
+      case TitleAlignment.center:
+        return TextAlign.center;
+      case TitleAlignment.right:
+        return TextAlign.right;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -509,25 +521,28 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
   }
 
   Widget _buildTitleText() {
-    return Text(
-      _titleController.text.trim().isEmpty
-          ? 'キャッチコピーを入力してください'
-          : _titleController.text,
-      textAlign: TextAlign.center,
-      maxLines: 3,
-      overflow: TextOverflow.ellipsis,
-      style: TextStyle(
-        color: _titleColor,
-        fontWeight: FontWeight.w800,
-        fontSize: _titleFontSize,
-        height: 1.2,
-        shadows: [
-          Shadow(
-            color: Colors.black.withValues(alpha: 0.2),
-            blurRadius: 12,
-            offset: const Offset(0, 2),
-          ),
-        ],
+    return SizedBox(
+      width: double.infinity,
+      child: Text(
+        _titleController.text.trim().isEmpty
+            ? 'キャッチコピーを入力してください'
+            : _titleController.text,
+        textAlign: _titleTextAlign,
+        maxLines: 3,
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          color: _titleColor,
+          fontWeight: FontWeight.w800,
+          fontSize: _titleFontSize,
+          height: 1.2,
+          shadows: [
+            Shadow(
+              color: Colors.black.withValues(alpha: 0.2),
+              blurRadius: 12,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -832,6 +847,33 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
             onSelectionChanged: (selection) {
               setState(() {
                 _titlePosition = selection.first;
+                _generatedBytes = null;
+              });
+            },
+          ),
+          const SizedBox(height: 10),
+          SegmentedButton<TitleAlignment>(
+            segments: const [
+              ButtonSegment(
+                value: TitleAlignment.left,
+                label: Text('左寄せ'),
+                icon: Icon(Icons.format_align_left),
+              ),
+              ButtonSegment(
+                value: TitleAlignment.center,
+                label: Text('中央寄せ'),
+                icon: Icon(Icons.format_align_center),
+              ),
+              ButtonSegment(
+                value: TitleAlignment.right,
+                label: Text('右寄せ'),
+                icon: Icon(Icons.format_align_right),
+              ),
+            ],
+            selected: {_titleAlignment},
+            onSelectionChanged: (selection) {
+              setState(() {
+                _titleAlignment = selection.first;
                 _generatedBytes = null;
               });
             },

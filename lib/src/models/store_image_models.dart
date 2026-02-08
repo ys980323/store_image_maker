@@ -6,6 +6,8 @@ enum BackgroundMode { solid, gradient }
 
 enum TitlePosition { top, bottom }
 
+enum TitleAlignment { left, center, right }
+
 class PaletteColor {
   const PaletteColor(this.name, this.color);
 
