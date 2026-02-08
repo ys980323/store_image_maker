@@ -41,8 +41,13 @@ class PaletteColor {
   final Color color;
 }
 
+const int kStoreImageOutputWidth = 1290;
+const int kStoreImageOutputHeight = 2796;
+const double kStoreImageOutputAspectRatio =
+    kStoreImageOutputWidth / kStoreImageOutputHeight;
+
 class BezelLayout {
-  static const double bezelPixels = 17.0;
+  static const double bezelPixels = 18.0;
 
   const BezelLayout({
     required this.sourceWidth,
@@ -80,7 +85,7 @@ class BezelLayout {
     final outerWidth = width + bezelPixels * 2;
     final outerHeight = height + bezelPixels * 2;
     final maxScreenCorner = (math.min(width, height) / 2) - 1;
-    final screenCornerPx = (screenshotSize.shortestSide * 0.075).clamp(
+    final screenCornerPx = (screenshotSize.shortestSide * 0.1).clamp(
       8.0,
       maxScreenCorner,
     );
@@ -253,13 +258,17 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
         throw StateError('プレビュー領域を取得できませんでした。');
       }
 
-      final image = await boundary.toImage(pixelRatio: 3);
+      final capturePixelRatio = kStoreImageOutputWidth / boundary.size.width;
+      final image = await boundary.toImage(pixelRatio: capturePixelRatio);
       final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      image.dispose();
       if (byteData == null) {
         throw StateError('PNGデータの生成に失敗しました。');
       }
 
-      final bytes = byteData.buffer.asUint8List();
+      final bytes = await _normalizeOutputResolution(
+        byteData.buffer.asUint8List(),
+      );
       if (!mounted) {
         return;
       }
@@ -285,6 +294,26 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
           _isExporting = false;
         });
       }
+    }
+  }
+
+  Future<Uint8List> _normalizeOutputResolution(Uint8List source) async {
+    final codec = await ui.instantiateImageCodec(
+      source,
+      targetWidth: kStoreImageOutputWidth,
+      targetHeight: kStoreImageOutputHeight,
+    );
+    final frameInfo = await codec.getNextFrame();
+    final image = frameInfo.image;
+    try {
+      final data = await image.toByteData(format: ui.ImageByteFormat.png);
+      if (data == null) {
+        throw StateError('出力解像度の正規化に失敗しました。');
+      }
+      return data.buffer.asUint8List();
+    } finally {
+      image.dispose();
+      codec.dispose();
     }
   }
 
@@ -317,7 +346,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
                 child: RepaintBoundary(
                   key: _captureKey,
                   child: AspectRatio(
-                    aspectRatio: 9 / 16,
+                    aspectRatio: kStoreImageOutputAspectRatio,
                     child: _buildComposedPreview(),
                   ),
                 ),
@@ -330,6 +359,15 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
             const SizedBox(height: 12),
             _buildTitleCard(),
             const SizedBox(height: 12),
+            const Text(
+              '出力解像度: 1290 x 2796 px',
+              style: TextStyle(
+                color: Color(0xFF475569),
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
             FilledButton.icon(
               onPressed: _isExporting ? null : _generateAndSaveImage,
               icon: _isExporting

@@ -5,6 +5,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:store_image_maker/main.dart';
 
 void main() {
+  test('store image output size is fixed for App Store', () {
+    expect(kStoreImageOutputWidth, 1290);
+    expect(kStoreImageOutputHeight, 2796);
+    expect(kStoreImageOutputAspectRatio, closeTo(1290 / 2796, 1e-12));
+  });
+
   test('bezel adds 10px on each side', () {
     final layout = BezelLayout.forScreenshotSize(const Size(1028, 1920));
 
@@ -27,6 +33,9 @@ void main() {
     final innerHeight =
         layout.outerHeight * scale - BezelLayout.bezelPixels * scale * 2;
 
-    expect(innerWidth / innerHeight, closeTo(source.width / source.height, 1e-9));
+    expect(
+      innerWidth / innerHeight,
+      closeTo(source.width / source.height, 1e-9),
+    );
   });
 }
