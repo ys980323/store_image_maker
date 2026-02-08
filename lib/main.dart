@@ -42,7 +42,7 @@ class PaletteColor {
 }
 
 class BezelLayout {
-  static const double bezelPixels = 20.0;
+  static const double bezelPixels = 17.0;
 
   const BezelLayout({
     required this.sourceWidth,
@@ -80,7 +80,7 @@ class BezelLayout {
     final outerWidth = width + bezelPixels * 2;
     final outerHeight = height + bezelPixels * 2;
     final maxScreenCorner = (math.min(width, height) / 2) - 1;
-    final screenCornerPx = (screenshotSize.shortestSide * 0.06).clamp(
+    final screenCornerPx = (screenshotSize.shortestSide * 0.075).clamp(
       8.0,
       maxScreenCorner,
     );
@@ -155,7 +155,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
   Color _titleColor = Colors.white;
 
   double _titleFontSize = 46;
-  double _phoneScale = 0.66;
+  final double _phoneScale = 0.66;
 
   bool _isExporting = false;
 
