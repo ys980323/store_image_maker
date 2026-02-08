@@ -212,9 +212,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('ストアイメージ作成'),
-      ),
+      appBar: AppBar(title: const Text('ストアイメージ作成')),
       body: DecoratedBox(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -680,7 +678,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
             ),
           ),
           const SizedBox(height: 12),
-          Text('端末風画像サイズ: $scalePercent%'),
+          Text('端末画像サイズ: $scalePercent%'),
           Slider(
             value: _phoneScale,
             min: 0.45,
@@ -848,41 +846,231 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
     required ValueChanged<Color> onSelected,
   }) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isCustomColor = !kPaletteColors.any(
+      (item) => selectedColor.toARGB32() == item.color.toARGB32(),
+    );
 
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: kPaletteColors
-          .map(
-            (item) => ChoiceChip(
-              selected: selectedColor.toARGB32() == item.color.toARGB32(),
-              showCheckmark: false,
-              side: BorderSide(color: colorScheme.outlineVariant),
-              selectedColor: colorScheme.secondaryContainer,
-              backgroundColor: colorScheme.surfaceContainerLowest,
-              label: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Container(
-                    width: 13,
-                    height: 13,
-                    decoration: BoxDecoration(
-                      color: item.color,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.black.withValues(alpha: 0.14),
-                      ),
+      children: [
+        ...kPaletteColors.map(
+          (item) => ChoiceChip(
+            selected: selectedColor.toARGB32() == item.color.toARGB32(),
+            showCheckmark: false,
+            side: BorderSide(color: colorScheme.outlineVariant),
+            selectedColor: colorScheme.secondaryContainer,
+            backgroundColor: colorScheme.surfaceContainerLowest,
+            label: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 13,
+                  height: 13,
+                  decoration: BoxDecoration(
+                    color: item.color,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.black.withValues(alpha: 0.14),
                     ),
                   ),
-                  const SizedBox(width: 6),
-                  Text(item.name),
-                ],
-              ),
-              labelStyle: const TextStyle(fontWeight: FontWeight.w600),
-              onSelected: (_) => onSelected(item.color),
+                ),
+                const SizedBox(width: 6),
+                Text(item.name),
+              ],
             ),
-          )
-          .toList(growable: false),
+            labelStyle: const TextStyle(fontWeight: FontWeight.w600),
+            onSelected: (_) => onSelected(item.color),
+          ),
+        ),
+        ChoiceChip(
+          selected: isCustomColor,
+          showCheckmark: false,
+          side: BorderSide(color: colorScheme.outlineVariant),
+          selectedColor: colorScheme.secondaryContainer,
+          backgroundColor: colorScheme.surfaceContainerLowest,
+          label: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 13,
+                height: 13,
+                decoration: BoxDecoration(
+                  color: selectedColor,
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: Colors.black.withValues(alpha: 0.14),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 6),
+              const Text('カスタム'),
+            ],
+          ),
+          labelStyle: const TextStyle(fontWeight: FontWeight.w600),
+          onSelected: (_) {
+            _pickCustomColor(
+              initialColor: selectedColor,
+              onSelected: onSelected,
+            );
+          },
+        ),
+      ],
     );
+  }
+
+  Future<void> _pickCustomColor({
+    required Color initialColor,
+    required ValueChanged<Color> onSelected,
+  }) async {
+    final color = await showDialog<Color>(
+      context: context,
+      builder: (dialogContext) {
+        final argb = initialColor.toARGB32();
+        double red = ((argb >> 16) & 0xFF).toDouble();
+        double green = ((argb >> 8) & 0xFF).toDouble();
+        double blue = (argb & 0xFF).toDouble();
+
+        Color currentColor() =>
+            Color.fromARGB(255, red.round(), green.round(), blue.round());
+
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            final previewColor = currentColor();
+
+            return AlertDialog(
+              title: const Text('カスタムカラー'),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Container(
+                      height: 56,
+                      decoration: BoxDecoration(
+                        color: previewColor,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: Colors.black.withValues(alpha: 0.15),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Center(
+                      child: Text(
+                        _toHexRgb(previewColor),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.6,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    _buildRgbSlider(
+                      label: 'R',
+                      value: red,
+                      activeColor: Colors.red,
+                      onChanged: (value) {
+                        setDialogState(() {
+                          red = value;
+                        });
+                      },
+                    ),
+                    _buildRgbSlider(
+                      label: 'G',
+                      value: green,
+                      activeColor: Colors.green,
+                      onChanged: (value) {
+                        setDialogState(() {
+                          green = value;
+                        });
+                      },
+                    ),
+                    _buildRgbSlider(
+                      label: 'B',
+                      value: blue,
+                      activeColor: Colors.blue,
+                      onChanged: (value) {
+                        setDialogState(() {
+                          blue = value;
+                        });
+                      },
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(dialogContext).pop();
+                  },
+                  child: const Text('キャンセル'),
+                ),
+                FilledButton(
+                  onPressed: () {
+                    Navigator.of(dialogContext).pop(currentColor());
+                  },
+                  child: const Text('適用'),
+                ),
+              ],
+            );
+          },
+        );
+      },
+    );
+
+    if (color == null) {
+      return;
+    }
+    if (!mounted) {
+      return;
+    }
+
+    onSelected(color);
+  }
+
+  Widget _buildRgbSlider({
+    required String label,
+    required double value,
+    required Color activeColor,
+    required ValueChanged<double> onChanged,
+  }) {
+    return Row(
+      children: [
+        SizedBox(
+          width: 18,
+          child: Text(
+            label,
+            style: const TextStyle(fontWeight: FontWeight.w700),
+          ),
+        ),
+        Expanded(
+          child: Slider(
+            value: value,
+            min: 0,
+            max: 255,
+            divisions: 255,
+            activeColor: activeColor,
+            label: value.round().toString(),
+            onChanged: onChanged,
+          ),
+        ),
+        SizedBox(
+          width: 30,
+          child: Text(
+            value.round().toString(),
+            textAlign: TextAlign.right,
+            style: const TextStyle(
+              fontFeatures: [ui.FontFeature.tabularFigures()],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _toHexRgb(Color color) {
+    final hex = color.toARGB32().toRadixString(16).padLeft(8, '0');
+    return '#${hex.substring(2).toUpperCase()}';
   }
 }

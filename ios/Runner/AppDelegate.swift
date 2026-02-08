@@ -76,7 +76,7 @@ import UIKit
         if authorized {
           requestAndSave()
         } else {
-          complete(
+          self.complete(
             result,
             with:
             FlutterError(
@@ -133,7 +133,7 @@ import UIKit
       localIdentifier = request.placeholderForCreatedAsset?.localIdentifier
     }) { success, error in
       if let error {
-        complete(
+        self.complete(
           result,
           with:
           FlutterError(
@@ -146,11 +146,11 @@ import UIKit
       }
 
       if success, let localIdentifier {
-        complete(result, with: localIdentifier)
+        self.complete(result, with: localIdentifier)
         return
       }
 
-      complete(
+      self.complete(
         result,
         with:
         FlutterError(
