@@ -160,7 +160,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
   Color _titleColor = Colors.white;
 
   double _titleFontSize = 46;
-  final double _phoneScale = 0.66;
+  double _phoneScale = 0.66;
 
   bool _isExporting = false;
 
@@ -542,6 +542,8 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
   }
 
   Widget _buildInputCard() {
+    final scalePercent = (_phoneScale * 100).round();
+
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(12),
@@ -562,6 +564,21 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
                   ),
                 ),
               ],
+            ),
+            const SizedBox(height: 10),
+            Text('端末風画像サイズ: $scalePercent%'),
+            Slider(
+              value: _phoneScale,
+              min: 0.45,
+              max: 0.9,
+              divisions: 45,
+              label: '$scalePercent%',
+              onChanged: (value) {
+                setState(() {
+                  _phoneScale = value;
+                  _generatedBytes = null;
+                });
+              },
             ),
           ],
         ),
