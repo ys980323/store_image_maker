@@ -24,6 +24,7 @@ class BezelLayout {
   static const double bezelPixels = 16.0;
   static const double outerFramePixels = 8.0;
   static const double highlightOuterFramePixels = 1.5;
+  static const double screenCornerRatio = 0.13;
   static const Size virtualScreenshotSize = Size(1179, 2556);
 
   const BezelLayout({
@@ -64,7 +65,7 @@ class BezelLayout {
     final outerWidth = width + bezelPixels * 2;
     final outerHeight = height + bezelPixels * 2;
     final maxScreenCorner = (math.min(width, height) / 2) - 1;
-    final screenCornerPx = (sourceSize.shortestSide * 0.1).clamp(
+    final screenCornerPx = (sourceSize.shortestSide * screenCornerRatio).clamp(
       8.0,
       maxScreenCorner,
     );
