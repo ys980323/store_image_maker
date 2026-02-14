@@ -25,6 +25,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
   final GlobalKey _captureKey = GlobalKey();
 
   Uint8List? _screenshotBytes;
+  Uint8List? _backgroundImageBytes;
   Uint8List? _generatedBytes;
   Size? _screenshotPixelSize;
 
@@ -39,6 +40,9 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
 
   double _titleFontSize = 46;
   double _phoneScale = 0.66;
+  double _backgroundImageScale = 1.0;
+  double _backgroundImageOffsetX = 0.0;
+  double _backgroundImageOffsetY = 0.0;
 
   bool _isExporting = false;
 
@@ -61,6 +65,17 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
     setState(() {
       _screenshotBytes = bytes;
       _screenshotPixelSize = screenshotSize;
+      _generatedBytes = null;
+    });
+  }
+
+  Future<void> _pickBackgroundImage() async {
+    final bytes = await _pickImageBytes();
+    if (bytes == null) {
+      return;
+    }
+    setState(() {
+      _backgroundImageBytes = bytes;
       _generatedBytes = null;
     });
   }
@@ -486,60 +501,125 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
   }
 
   Widget _buildComposedPreview() {
-    final decoration = _backgroundMode == BackgroundMode.solid
-        ? BoxDecoration(color: _solidColor)
-        : BoxDecoration(
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        _buildBackgroundLayer(),
+        IgnorePointer(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.white.withValues(alpha: 0.08),
+                  Colors.transparent,
+                  Colors.black.withValues(alpha: 0.1),
+                ],
+              ),
+            ),
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(20, 24, 20, 28),
+          child: Column(
+            children: [
+              if (_titlePosition == TitlePosition.top) _buildTitleText(),
+              if (_titlePosition == TitlePosition.top)
+                const SizedBox(height: 24),
+              Expanded(
+                child: Center(
+                  child: FractionallySizedBox(
+                    widthFactor: _phoneScale,
+                    child: _buildPhonePreview(),
+                  ),
+                ),
+              ),
+              if (_titlePosition == TitlePosition.bottom)
+                const SizedBox(height: 24),
+              if (_titlePosition == TitlePosition.bottom) _buildTitleText(),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBackgroundLayer() {
+    switch (_backgroundMode) {
+      case BackgroundMode.solid:
+        return ColoredBox(color: _solidColor);
+      case BackgroundMode.gradient:
+        return DecoratedBox(
+          decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [_gradientStartColor, _gradientEndColor],
             ),
-          );
-
-    return DecoratedBox(
-      decoration: decoration,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          IgnorePointer(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.white.withValues(alpha: 0.08),
-                    Colors.transparent,
-                    Colors.black.withValues(alpha: 0.1),
-                  ],
+          ),
+        );
+      case BackgroundMode.image:
+        if (_backgroundImageBytes == null) {
+          return DecoratedBox(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFF334155), Color(0xFF64748B)],
+              ),
+            ),
+            child: Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.24),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Text(
+                  '背景画像を選択してください',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20, 24, 20, 28),
-            child: Column(
-              children: [
-                if (_titlePosition == TitlePosition.top) _buildTitleText(),
-                if (_titlePosition == TitlePosition.top)
-                  const SizedBox(height: 24),
-                Expanded(
-                  child: Center(
-                    child: FractionallySizedBox(
-                      widthFactor: _phoneScale,
-                      child: _buildPhonePreview(),
+          );
+        }
+
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            return ColoredBox(
+              color: Colors.black,
+              child: ClipRect(
+                child: Align(
+                  alignment: Alignment(
+                    _backgroundImageOffsetX,
+                    _backgroundImageOffsetY,
+                  ),
+                  child: Transform.scale(
+                    scale: _backgroundImageScale,
+                    child: SizedBox(
+                      width: constraints.maxWidth,
+                      height: constraints.maxHeight,
+                      child: Image.memory(
+                        _backgroundImageBytes!,
+                        fit: BoxFit.cover,
+                        filterQuality: FilterQuality.high,
+                        gaplessPlayback: true,
+                      ),
                     ),
                   ),
                 ),
-                if (_titlePosition == TitlePosition.bottom)
-                  const SizedBox(height: 24),
-                if (_titlePosition == TitlePosition.bottom) _buildTitleText(),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
+              ),
+            );
+          },
+        );
+    }
   }
 
   Widget _buildTitleText() {
@@ -765,6 +845,11 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
                 label: Text('グラデーション'),
                 icon: Icon(Icons.gradient),
               ),
+              ButtonSegment(
+                value: BackgroundMode.image,
+                label: Text('画像'),
+                icon: Icon(Icons.image_outlined),
+              ),
             ],
             selected: {_backgroundMode},
             onSelectionChanged: (selection) {
@@ -787,7 +872,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
                 });
               },
             ),
-          ] else ...[
+          ] else if (_backgroundMode == BackgroundMode.gradient) ...[
             const Text('開始色', style: TextStyle(fontWeight: FontWeight.w600)),
             const SizedBox(height: 6),
             _buildPalette(
@@ -807,6 +892,63 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
               onSelected: (value) {
                 setState(() {
                   _gradientEndColor = value;
+                  _generatedBytes = null;
+                });
+              },
+            ),
+          ] else ...[
+            FilledButton.tonalIcon(
+              onPressed: _pickBackgroundImage,
+              icon: const Icon(Icons.image_rounded),
+              label: Text(
+                _backgroundImageBytes == null ? '背景画像を選択' : '背景画像を変更',
+              ),
+              style: FilledButton.styleFrom(
+                minimumSize: const Size(double.infinity, 46),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Text('画像サイズ: ${(_backgroundImageScale * 100).round()}%'),
+            Slider(
+              value: _backgroundImageScale,
+              min: 0.5,
+              max: 2.5,
+              divisions: 80,
+              label: '${(_backgroundImageScale * 100).round()}%',
+              onChanged: (value) {
+                setState(() {
+                  _backgroundImageScale = value;
+                  _generatedBytes = null;
+                });
+              },
+            ),
+            Text('横位置: ${_backgroundImageOffsetX.toStringAsFixed(2)}'),
+            Slider(
+              value: _backgroundImageOffsetX,
+              min: -1,
+              max: 1,
+              divisions: 40,
+              label: _backgroundImageOffsetX.toStringAsFixed(2),
+              onChanged: (value) {
+                setState(() {
+                  _backgroundImageOffsetX = value;
+                  _generatedBytes = null;
+                });
+              },
+            ),
+            Text('縦位置: ${_backgroundImageOffsetY.toStringAsFixed(2)}'),
+            Slider(
+              value: _backgroundImageOffsetY,
+              min: -1,
+              max: 1,
+              divisions: 40,
+              label: _backgroundImageOffsetY.toStringAsFixed(2),
+              onChanged: (value) {
+                setState(() {
+                  _backgroundImageOffsetY = value;
                   _generatedBytes = null;
                 });
               },

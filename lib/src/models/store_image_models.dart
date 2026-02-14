@@ -2,7 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
-enum BackgroundMode { solid, gradient }
+enum BackgroundMode { solid, gradient, image }
 
 enum TitlePosition { top, bottom }
 
