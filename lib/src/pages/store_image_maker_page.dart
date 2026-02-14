@@ -855,7 +855,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
             contentPadding: EdgeInsets.zero,
             dense: true,
             title: const Text(
-              'ダイナミックアイランド',
+              '仮想ノッチ',
               style: TextStyle(fontWeight: FontWeight.w600),
             ),
             subtitle: const Text('スクショ上に仮想ノッチを重ねて表示'),
@@ -868,7 +868,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
             },
           ),
           const SizedBox(height: 4),
-          Text('ダイナミックアイランドサイズ: ${(_dynamicIslandScale * 100).round()}%'),
+          Text('仮想ノッチサイズ: ${(_dynamicIslandScale * 100).round()}%'),
           Slider(
             value: _dynamicIslandScale,
             min: 0.7,
