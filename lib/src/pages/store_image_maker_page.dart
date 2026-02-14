@@ -43,6 +43,8 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
   double _backgroundImageScale = 1.0;
   double _backgroundImageOffsetX = 0.0;
   double _backgroundImageOffsetY = 0.0;
+  bool _showDynamicIsland = false;
+  double _dynamicIslandScale = 1.0;
 
   bool _isExporting = false;
 
@@ -723,7 +725,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
                                 borderRadius: BorderRadius.circular(
                                   screenCorner,
                                 ),
-                                child: _buildScreenshotLayer(),
+                                child: _buildScreenLayer(),
                               ),
                             ),
                           ),
@@ -783,6 +785,49 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
     );
   }
 
+  Widget _buildScreenLayer() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final baseIslandWidth = math.min(
+          constraints.maxWidth * 0.6,
+          math.max(74.0, constraints.maxWidth * 0.28),
+        );
+        final baseIslandHeight = math.min(
+          38.0,
+          math.max(18.0, constraints.maxHeight * 0.05),
+        );
+        final islandWidth = baseIslandWidth * _dynamicIslandScale;
+        final islandHeight = baseIslandHeight * _dynamicIslandScale;
+        final islandTopOffset = math.min(
+          10.0,
+          math.max(6.0, constraints.maxHeight * 0.01),
+        );
+
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            _buildScreenshotLayer(),
+            if (_showDynamicIsland)
+              Positioned(
+                top: islandTopOffset,
+                left: (constraints.maxWidth - islandWidth) / 2,
+                child: IgnorePointer(
+                  child: Container(
+                    width: islandWidth,
+                    height: islandHeight,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF050506),
+                      borderRadius: BorderRadius.circular(islandHeight / 2),
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+
   Widget _buildInputCard() {
     final scalePercent = (_phoneScale * 100).round();
     final hasScreenshot = _screenshotBytes != null;
@@ -806,6 +851,40 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
             ),
           ),
           const SizedBox(height: 10),
+          SwitchListTile.adaptive(
+            contentPadding: EdgeInsets.zero,
+            dense: true,
+            title: const Text(
+              'ダイナミックアイランド',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+            subtitle: const Text('スクショ上に仮想ノッチを重ねて表示'),
+            value: _showDynamicIsland,
+            onChanged: (value) {
+              setState(() {
+                _showDynamicIsland = value;
+                _generatedBytes = null;
+              });
+            },
+          ),
+          const SizedBox(height: 4),
+          Text('ダイナミックアイランドサイズ: ${(_dynamicIslandScale * 100).round()}%'),
+          Slider(
+            value: _dynamicIslandScale,
+            min: 0.7,
+            max: 1.4,
+            divisions: 28,
+            label: '${(_dynamicIslandScale * 100).round()}%',
+            onChanged: _showDynamicIsland
+                ? (value) {
+                    setState(() {
+                      _dynamicIslandScale = value;
+                      _generatedBytes = null;
+                    });
+                  }
+                : null,
+          ),
+          const SizedBox(height: 4),
           Text('端末画像サイズ: $scalePercent%'),
           Slider(
             value: _phoneScale,
