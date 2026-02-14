@@ -22,6 +22,7 @@ const double kStoreImageOutputAspectRatio =
 
 class BezelLayout {
   static const double bezelPixels = 18.0;
+  static const Size virtualScreenshotSize = Size(1179, 2556);
 
   const BezelLayout({
     required this.sourceWidth,
@@ -40,26 +41,19 @@ class BezelLayout {
   double get outerAspectRatio => outerWidth / outerHeight;
   double get sourceAspectRatio => sourceWidth / sourceHeight;
 
-  static const BezelLayout fallback = BezelLayout(
-    sourceWidth: 393,
-    sourceHeight: 852,
-    outerCornerPixels: 34,
-    screenCornerPixels: 24,
-  );
-
   factory BezelLayout.forScreenshotSize(Size? screenshotSize) {
-    if (screenshotSize == null ||
-        screenshotSize.width <= 0 ||
-        screenshotSize.height <= 0) {
-      return fallback;
-    }
-
-    final width = screenshotSize.width;
-    final height = screenshotSize.height;
+    final sourceSize =
+        screenshotSize == null ||
+            screenshotSize.width <= 0 ||
+            screenshotSize.height <= 0
+        ? virtualScreenshotSize
+        : screenshotSize;
+    final width = sourceSize.width;
+    final height = sourceSize.height;
     final outerWidth = width + bezelPixels * 2;
     final outerHeight = height + bezelPixels * 2;
     final maxScreenCorner = (math.min(width, height) / 2) - 1;
-    final screenCornerPx = (screenshotSize.shortestSide * 0.1).clamp(
+    final screenCornerPx = (sourceSize.shortestSide * 0.1).clamp(
       8.0,
       maxScreenCorner,
     );
