@@ -573,17 +573,21 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
     final bezel = _bezelLayout;
 
     return AspectRatio(
-      aspectRatio: bezel.outerAspectRatio,
+      aspectRatio: bezel.framedOuterAspectRatio,
       child: LayoutBuilder(
         builder: (context, constraints) {
           final scale = math.min(
-            constraints.maxWidth / bezel.outerWidth,
-            constraints.maxHeight / bezel.outerHeight,
+            constraints.maxWidth / bezel.framedOuterWidth,
+            constraints.maxHeight / bezel.framedOuterHeight,
           );
+          final frameWidth = BezelLayout.outerFramePixels * scale;
+          final framedOuterWidth = bezel.framedOuterWidth * scale;
+          final framedOuterHeight = bezel.framedOuterHeight * scale;
           final outerWidth = bezel.outerWidth * scale;
           final outerHeight = bezel.outerHeight * scale;
           final bezelWidth = BezelLayout.bezelPixels * scale;
           final outerCorner = bezel.outerCornerPixels * scale;
+          final framedOuterCorner = outerCorner + frameWidth;
           final screenCorner = bezel.screenCornerPixels * scale;
 
           assert(() {
@@ -596,18 +600,31 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
 
           return Center(
             child: SizedBox(
-              width: outerWidth,
-              height: outerHeight,
+              width: framedOuterWidth,
+              height: framedOuterHeight,
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                  color: const Color(0xFF09090B),
-                  borderRadius: BorderRadius.circular(outerCorner),
+                  color: const ui.Color.fromARGB(255, 59, 60, 62),
+                  borderRadius: BorderRadius.circular(framedOuterCorner),
                 ),
                 child: Padding(
-                  padding: EdgeInsets.all(bezelWidth),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(screenCorner),
-                    child: _buildScreenshotLayer(),
+                  padding: EdgeInsets.all(frameWidth),
+                  child: SizedBox(
+                    width: outerWidth,
+                    height: outerHeight,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF09090B),
+                        borderRadius: BorderRadius.circular(outerCorner),
+                      ),
+                      child: Padding(
+                        padding: EdgeInsets.all(bezelWidth),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(screenCorner),
+                          child: _buildScreenshotLayer(),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               ),
