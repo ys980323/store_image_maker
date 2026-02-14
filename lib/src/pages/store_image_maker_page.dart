@@ -197,6 +197,26 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
     }
   }
 
+  Future<Uint8List> _capturePreviewBytes() async {
+    await Future<void>.delayed(const Duration(milliseconds: 16));
+    final boundary =
+        _captureKey.currentContext?.findRenderObject()
+            as RenderRepaintBoundary?;
+    if (boundary == null) {
+      throw StateError('プレビュー領域を取得できませんでした。');
+    }
+
+    final capturePixelRatio = kStoreImageOutputWidth / boundary.size.width;
+    final image = await boundary.toImage(pixelRatio: capturePixelRatio);
+    final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+    image.dispose();
+    if (byteData == null) {
+      throw StateError('PNGデータの生成に失敗しました。');
+    }
+
+    return _normalizeOutputResolution(byteData.buffer.asUint8List());
+  }
+
   void _showSnackBar(String message) {
     if (!mounted) {
       return;
@@ -781,6 +801,8 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
               },
             ),
           ],
+          const SizedBox(height: 10),
+          _buildPreviewPopupButton(),
         ],
       ),
     );
@@ -797,7 +819,14 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
           TextField(
             controller: _titleController,
             maxLines: 3,
+            textInputAction: TextInputAction.done,
             decoration: const InputDecoration(hintText: '任意のキャッチコピーを入力'),
+            onEditingComplete: () {
+              FocusManager.instance.primaryFocus?.unfocus();
+            },
+            onTapOutside: (_) {
+              FocusManager.instance.primaryFocus?.unfocus();
+            },
             onChanged: (_) {
               setState(() {
                 _generatedBytes = null;
@@ -880,8 +909,111 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
               });
             },
           ),
+          const SizedBox(height: 10),
+          _buildPreviewPopupButton(),
         ],
       ),
+    );
+  }
+
+  Widget _buildPreviewPopupButton() {
+    return OutlinedButton.icon(
+      onPressed: _showPreviewDialog,
+      style: OutlinedButton.styleFrom(
+        minimumSize: const Size(double.infinity, 46),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      ),
+      icon: const Icon(Icons.preview_rounded),
+      label: const Text('プレビュー表示'),
+    );
+  }
+
+  Future<void> _showPreviewDialog() async {
+    FocusManager.instance.primaryFocus?.unfocus();
+    final previewFuture = _capturePreviewBytes();
+
+    await showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        final maxPreviewHeight = math.min(
+          MediaQuery.sizeOf(dialogContext).height * 0.68,
+          680.0,
+        );
+
+        return Dialog(
+          insetPadding: const EdgeInsets.symmetric(
+            horizontal: 16,
+            vertical: 24,
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(12, 10, 12, 12),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  children: [
+                    const Expanded(
+                      child: Text(
+                        'プレビュー',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                    IconButton(
+                      onPressed: () => Navigator.of(dialogContext).pop(),
+                      icon: const Icon(Icons.close),
+                      tooltip: '閉じる',
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                SizedBox(
+                  height: maxPreviewHeight,
+                  child: FutureBuilder<Uint8List>(
+                    future: previewFuture,
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState != ConnectionState.done) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+
+                      if (snapshot.hasError || !snapshot.hasData) {
+                        return Center(
+                          child: Text(
+                            'プレビューの生成に失敗しました',
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.error,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        );
+                      }
+
+                      return Center(
+                        child: AspectRatio(
+                          aspectRatio: kStoreImageOutputAspectRatio,
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(16),
+                            child: Image.memory(
+                              snapshot.data!,
+                              fit: BoxFit.contain,
+                              filterQuality: FilterQuality.high,
+                              gaplessPlayback: true,
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
