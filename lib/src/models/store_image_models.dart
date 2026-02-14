@@ -24,6 +24,10 @@ class BezelLayout {
   static const double bezelPixels = 24.0;
   static const double outerFramePixels = 16.0;
   static const double highlightOuterFramePixels = 3.0;
+  static const double sideButtonGapPixels = 8.0;
+  static const double volumeButtonWidthPixels = 6.0;
+  static const double powerButtonWidthPixels = 8.0;
+  static const double sideButtonOutsetPixels = 8.0;
   static const double screenCornerRatio = 0.13;
   static const Size virtualScreenshotSize = Size(1179, 2556);
 
@@ -47,10 +51,20 @@ class BezelLayout {
       framedOuterWidth + highlightOuterFramePixels * 2;
   double get highlightedFramedOuterHeight =>
       framedOuterHeight + highlightOuterFramePixels * 2;
+  double get leftButtonAreaWidth =>
+      volumeButtonWidthPixels + sideButtonGapPixels;
+  double get rightButtonAreaWidth =>
+      powerButtonWidthPixels + sideButtonGapPixels;
+  double get withButtonsOuterWidth =>
+      highlightedFramedOuterWidth + leftButtonAreaWidth + rightButtonAreaWidth;
+  double get withButtonsOuterHeight =>
+      highlightedFramedOuterHeight + sideButtonOutsetPixels * 2;
   double get outerAspectRatio => outerWidth / outerHeight;
   double get framedOuterAspectRatio => framedOuterWidth / framedOuterHeight;
   double get highlightedFramedOuterAspectRatio =>
       highlightedFramedOuterWidth / highlightedFramedOuterHeight;
+  double get withButtonsOuterAspectRatio =>
+      withButtonsOuterWidth / withButtonsOuterHeight;
   double get sourceAspectRatio => sourceWidth / sourceHeight;
 
   factory BezelLayout.forScreenshotSize(Size? screenshotSize) {

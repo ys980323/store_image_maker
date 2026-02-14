@@ -655,20 +655,28 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
     final bezel = _bezelLayout;
 
     return AspectRatio(
-      aspectRatio: bezel.highlightedFramedOuterAspectRatio,
+      aspectRatio: bezel.withButtonsOuterAspectRatio,
       child: LayoutBuilder(
         builder: (context, constraints) {
           final scale = math.min(
-            constraints.maxWidth / bezel.highlightedFramedOuterWidth,
-            constraints.maxHeight / bezel.highlightedFramedOuterHeight,
+            constraints.maxWidth / bezel.withButtonsOuterWidth,
+            constraints.maxHeight / bezel.withButtonsOuterHeight,
           );
           final highlightFrameWidth =
               BezelLayout.highlightOuterFramePixels * scale;
+          final sideButtonGap = BezelLayout.sideButtonGapPixels * scale;
+          final volumeButtonWidth = BezelLayout.volumeButtonWidthPixels * scale;
+          final powerButtonWidth = BezelLayout.powerButtonWidthPixels * scale;
+          final sideButtonOutset = BezelLayout.sideButtonOutsetPixels * scale;
           final frameWidth = BezelLayout.outerFramePixels * scale;
+          final frameLeft = volumeButtonWidth + sideButtonGap;
+          final frameTop = sideButtonOutset;
+          final withButtonsOuterWidth = bezel.withButtonsOuterWidth * scale;
           final highlightedFramedOuterWidth =
               bezel.highlightedFramedOuterWidth * scale;
           final highlightedFramedOuterHeight =
               bezel.highlightedFramedOuterHeight * scale;
+          final withButtonsOuterHeight = bezel.withButtonsOuterHeight * scale;
           final framedOuterWidth = bezel.framedOuterWidth * scale;
           final framedOuterHeight = bezel.framedOuterHeight * scale;
           final outerWidth = bezel.outerWidth * scale;
@@ -690,42 +698,58 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
 
           return Center(
             child: SizedBox(
-              width: highlightedFramedOuterWidth,
-              height: highlightedFramedOuterHeight,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: const ui.Color.fromARGB(255, 188, 191, 196),
-                  borderRadius: BorderRadius.circular(
-                    highlightedFramedOuterCorner,
-                  ),
-                ),
-                child: Padding(
-                  padding: EdgeInsets.all(highlightFrameWidth),
-                  child: SizedBox(
-                    width: framedOuterWidth,
-                    height: framedOuterHeight,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: const ui.Color.fromARGB(255, 59, 60, 62),
-                        borderRadius: BorderRadius.circular(framedOuterCorner),
-                      ),
-                      child: Padding(
-                        padding: EdgeInsets.all(frameWidth),
-                        child: SizedBox(
-                          width: outerWidth,
-                          height: outerHeight,
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF09090B),
-                              borderRadius: BorderRadius.circular(outerCorner),
-                            ),
-                            child: Padding(
-                              padding: EdgeInsets.all(bezelWidth),
-                              child: ClipRRect(
+              width: withButtonsOuterWidth,
+              height: withButtonsOuterHeight,
+              child: Stack(
+                children: [
+                  Positioned(
+                    left: frameLeft,
+                    top: frameTop,
+                    child: SizedBox(
+                      width: highlightedFramedOuterWidth,
+                      height: highlightedFramedOuterHeight,
+                      child: DecoratedBox(
+                        decoration: BoxDecoration(
+                          color: const ui.Color.fromARGB(255, 188, 191, 196),
+                          borderRadius: BorderRadius.circular(
+                            highlightedFramedOuterCorner,
+                          ),
+                        ),
+                        child: Padding(
+                          padding: EdgeInsets.all(highlightFrameWidth),
+                          child: SizedBox(
+                            width: framedOuterWidth,
+                            height: framedOuterHeight,
+                            child: DecoratedBox(
+                              decoration: BoxDecoration(
+                                color: const ui.Color.fromARGB(255, 59, 60, 62),
                                 borderRadius: BorderRadius.circular(
-                                  screenCorner,
+                                  framedOuterCorner,
                                 ),
-                                child: _buildScreenLayer(),
+                              ),
+                              child: Padding(
+                                padding: EdgeInsets.all(frameWidth),
+                                child: SizedBox(
+                                  width: outerWidth,
+                                  height: outerHeight,
+                                  child: DecoratedBox(
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF09090B),
+                                      borderRadius: BorderRadius.circular(
+                                        outerCorner,
+                                      ),
+                                    ),
+                                    child: Padding(
+                                      padding: EdgeInsets.all(bezelWidth),
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(
+                                          screenCorner,
+                                        ),
+                                        child: _buildScreenLayer(),
+                                      ),
+                                    ),
+                                  ),
+                                ),
                               ),
                             ),
                           ),
@@ -733,11 +757,52 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
                       ),
                     ),
                   ),
-                ),
+                  _buildSideButton(
+                    left: frameLeft - sideButtonGap - volumeButtonWidth,
+                    top: withButtonsOuterHeight * 0.26,
+                    width: volumeButtonWidth,
+                    height: withButtonsOuterHeight * 0.08,
+                  ),
+                  _buildSideButton(
+                    left: frameLeft - sideButtonGap - volumeButtonWidth,
+                    top: withButtonsOuterHeight * 0.36,
+                    width: volumeButtonWidth,
+                    height: withButtonsOuterHeight * 0.08,
+                  ),
+                  _buildSideButton(
+                    left:
+                        frameLeft + highlightedFramedOuterWidth + sideButtonGap,
+                    top: withButtonsOuterHeight * 0.33,
+                    width: powerButtonWidth,
+                    height: withButtonsOuterHeight * 0.12,
+                  ),
+                ],
               ),
             ),
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildSideButton({
+    required double left,
+    required double top,
+    required double width,
+    required double height,
+  }) {
+    return Positioned(
+      left: left,
+      top: top,
+      child: IgnorePointer(
+        child: Container(
+          width: math.max(2.0, width),
+          height: math.max(8.0, height),
+          decoration: BoxDecoration(
+            color: const ui.Color.fromARGB(255, 52, 54, 57),
+            borderRadius: BorderRadius.circular(999),
+          ),
+        ),
       ),
     );
   }
