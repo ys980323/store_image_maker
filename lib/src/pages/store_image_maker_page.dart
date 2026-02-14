@@ -726,37 +726,6 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
             ),
           ),
           const SizedBox(height: 10),
-          Container(
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceContainerLowest,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                color: Theme.of(context).colorScheme.outlineVariant,
-              ),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            child: Row(
-              children: [
-                Icon(
-                  hasScreenshot
-                      ? Icons.check_circle_rounded
-                      : Icons.info_outline_rounded,
-                  size: 18,
-                  color: hasScreenshot
-                      ? Theme.of(context).colorScheme.primary
-                      : Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    hasScreenshot ? '素材読み込み済み' : 'まず素材画像を選択してください',
-                    style: const TextStyle(fontWeight: FontWeight.w600),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
           Text('端末画像サイズ: $scalePercent%'),
           Slider(
             value: _phoneScale,
