@@ -9,6 +9,7 @@ import 'package:flutter/rendering.dart';
 
 import '../image_exporter.dart';
 import '../models/store_image_models.dart';
+import '../widgets/admob_bottom_banner.dart';
 
 class StoreImageMakerPage extends StatefulWidget {
   const StoreImageMakerPage({super.key});
@@ -225,6 +226,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('ストアイメージ作成')),
+      bottomNavigationBar: const AdMobBottomBanner(),
       body: DecoratedBox(
         decoration: BoxDecoration(
           gradient: LinearGradient(
