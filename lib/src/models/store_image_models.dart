@@ -21,9 +21,9 @@ const double kStoreImageOutputAspectRatio =
     kStoreImageOutputWidth / kStoreImageOutputHeight;
 
 class BezelLayout {
-  static const double bezelPixels = 16.0;
-  static const double outerFramePixels = 8.0;
-  static const double highlightOuterFramePixels = 1.5;
+  static const double bezelPixels = 24.0;
+  static const double outerFramePixels = 16.0;
+  static const double highlightOuterFramePixels = 3.0;
   static const double screenCornerRatio = 0.13;
   static const Size virtualScreenshotSize = Size(1179, 2556);
 

@@ -790,16 +790,16 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
       builder: (context, constraints) {
         final baseIslandWidth = math.min(
           constraints.maxWidth * 0.6,
-          math.max(74.0, constraints.maxWidth * 0.28),
+          math.max(56.0, constraints.maxWidth * 0.28),
         );
         final baseIslandHeight = math.min(
-          38.0,
-          math.max(18.0, constraints.maxHeight * 0.05),
+          28.0,
+          math.max(18.0, constraints.maxHeight * 0.03),
         );
         final islandWidth = baseIslandWidth * _dynamicIslandScale;
         final islandHeight = baseIslandHeight * _dynamicIslandScale;
         final islandTopOffset = math.min(
-          10.0,
+          8.0,
           math.max(6.0, constraints.maxHeight * 0.01),
         );
 
