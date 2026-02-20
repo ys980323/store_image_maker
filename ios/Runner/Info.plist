@@ -50,6 +50,6 @@
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>生成したストアイメージを写真アプリへ保存するために使用します。</string>
 	<key>GADApplicationIdentifier</key>
-	<string>ca-app-pub-3940256099942544~1458002511</string>
+	<string>ca-app-pub-8980159252766093~6913565427</string>
 </dict>
 </plist>

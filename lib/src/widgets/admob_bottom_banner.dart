@@ -26,7 +26,9 @@ class _AdMobBottomBannerState extends State<AdMobBottomBanner> {
       case TargetPlatform.android:
         return 'ca-app-pub-3940256099942544/6300978111';
       case TargetPlatform.iOS:
-        return 'ca-app-pub-3940256099942544/2934735716';
+        return kReleaseMode
+            ? 'ca-app-pub-8980159252766093/6039032680'
+            : 'ca-app-pub-3940256099942544/2934735716';
       case TargetPlatform.fuchsia:
       case TargetPlatform.linux:
       case TargetPlatform.macOS:
