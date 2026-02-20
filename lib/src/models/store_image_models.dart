@@ -15,8 +15,8 @@ class PaletteColor {
   final Color color;
 }
 
-const int kStoreImageOutputWidth = 1290;
-const int kStoreImageOutputHeight = 2796;
+const int kStoreImageOutputWidth = 1242;
+const int kStoreImageOutputHeight = 2688;
 const double kStoreImageOutputAspectRatio =
     kStoreImageOutputWidth / kStoreImageOutputHeight;
 

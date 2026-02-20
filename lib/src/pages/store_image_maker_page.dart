@@ -390,7 +390,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
                 SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    '出力解像度は 1290 x 2796 px に固定されています',
+                    '出力解像度は 1242 x 2688 px に固定されています',
                     style: TextStyle(fontWeight: FontWeight.w600),
                   ),
                 ),
@@ -979,11 +979,8 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
           TextField(
             controller: _titleController,
             maxLines: 3,
-            textInputAction: TextInputAction.done,
+            textInputAction: TextInputAction.newline,
             decoration: const InputDecoration(hintText: '任意のキャッチコピーを入力'),
-            onEditingComplete: () {
-              FocusManager.instance.primaryFocus?.unfocus();
-            },
             onTapOutside: (_) {
               FocusManager.instance.primaryFocus?.unfocus();
             },
