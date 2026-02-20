@@ -6,10 +6,13 @@ import 'dart:ui' as ui;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../image_exporter.dart';
 import '../models/store_image_models.dart';
 import '../widgets/admob_bottom_banner.dart';
+
+enum _AppMenuAction { privacyPolicy, termsOfService }
 
 class StoreImageMakerPage extends StatefulWidget {
   const StoreImageMakerPage({super.key});
@@ -228,6 +231,21 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
     ).showSnackBar(SnackBar(content: Text(message)));
   }
 
+  Future<void> _openExternalPage(_AppMenuAction action) async {
+    final uri = switch (action) {
+      _AppMenuAction.privacyPolicy => Uri.parse(
+        'https://homepage-5021a.web.app/privacy-policy.html',
+      ),
+      _AppMenuAction.termsOfService => Uri.parse(
+        'https://homepage-5021a.web.app/terms-of-service.html',
+      ),
+    };
+    final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!launched) {
+      _showSnackBar('ページを開けませんでした。');
+    }
+  }
+
   BezelLayout get _bezelLayout =>
       BezelLayout.forScreenshotSize(_screenshotPixelSize);
 
@@ -247,7 +265,25 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('ストアイメージ作成')),
+      appBar: AppBar(
+        title: const Text('ストアイメージ作成'),
+        actions: [
+          PopupMenuButton<_AppMenuAction>(
+            icon: const Icon(Icons.menu),
+            onSelected: _openExternalPage,
+            itemBuilder: (context) => const [
+              PopupMenuItem(
+                value: _AppMenuAction.privacyPolicy,
+                child: Text('プライバシーポリシー'),
+              ),
+              PopupMenuItem(
+                value: _AppMenuAction.termsOfService,
+                child: Text('利用規約'),
+              ),
+            ],
+          ),
+        ],
+      ),
       bottomNavigationBar: const AdMobBottomBanner(),
       body: DecoratedBox(
         decoration: BoxDecoration(
