@@ -11,6 +11,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../image_exporter.dart';
 import '../models/store_image_models.dart';
 import '../widgets/admob_bottom_banner.dart';
+import '../widgets/admob_interstitial.dart';
 
 enum _AppMenuAction { privacyPolicy, termsOfService }
 
@@ -47,8 +48,17 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
 
   bool _isExporting = false;
 
+  final AdMobInterstitial _interstitialAd = AdMobInterstitial();
+
+  @override
+  void initState() {
+    super.initState();
+    _interstitialAd.loadAd();
+  }
+
   @override
   void dispose() {
+    _interstitialAd.dispose();
     _titleController.dispose();
     super.dispose();
   }
@@ -166,6 +176,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
           return;
         }
         _showSnackBar('画像を保存しました: $path');
+        _interstitialAd.onImageSaved();
       } on UnsupportedError catch (_) {
         _showSnackBar('PNGは生成しました。現在のプラットフォームは保存非対応です。');
       } catch (error) {
