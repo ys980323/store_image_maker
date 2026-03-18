@@ -6,6 +6,8 @@ import 'dart:ui' as ui;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:in_app_review/in_app_review.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../image_exporter.dart';
@@ -14,7 +16,7 @@ import '../services/preset_repository.dart';
 import '../widgets/admob_bottom_banner.dart';
 import '../widgets/admob_interstitial.dart';
 
-enum _AppMenuAction { privacyPolicy, termsOfService }
+enum _AppMenuAction { privacyPolicy, termsOfService, review }
 
 class StoreImageMakerPage extends StatefulWidget {
   const StoreImageMakerPage({super.key});
@@ -279,6 +281,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
         }
         _showSnackBar('画像を保存しました: $path');
         _interstitialAd.onImageSaved();
+        _requestReviewIfNeeded();
       } on UnsupportedError catch (_) {
         _showSnackBar('PNGは生成しました。現在のプラットフォームは保存非対応です。');
       } catch (error) {
@@ -344,7 +347,11 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
     ).showSnackBar(SnackBar(content: Text(message)));
   }
 
-  Future<void> _openExternalPage(_AppMenuAction action) async {
+  Future<void> _onMenuAction(_AppMenuAction action) async {
+    if (action == _AppMenuAction.review) {
+      await _openAppReview();
+      return;
+    }
     final uri = switch (action) {
       _AppMenuAction.privacyPolicy => Uri.parse(
         'https://homepage-5021a.web.app/privacy-policy.html',
@@ -352,10 +359,44 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
       _AppMenuAction.termsOfService => Uri.parse(
         'https://homepage-5021a.web.app/terms-of-service.html',
       ),
+      _AppMenuAction.review => throw StateError('unreachable'),
     };
     final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!launched) {
       _showSnackBar('ページを開けませんでした。');
+    }
+  }
+
+  Future<void> _openAppReview() async {
+    final inAppReview = InAppReview.instance;
+    if (await inAppReview.isAvailable()) {
+      await inAppReview.requestReview();
+    } else {
+      final launched = await launchUrl(
+        Uri.parse(
+          'https://apps.apple.com/jp/app/%E3%82%B9%E3%83%88%E3%82%A2%E3%82%A4%E3%83%A1%E3%83%BC%E3%82%B8%E4%BD%9C%E6%88%90-%E3%83%A2%E3%83%83%E3%82%AF%E3%82%A2%E3%83%83%E3%83%97%E7%94%BB%E5%83%8F-%E3%83%95%E3%83%AC%E3%83%BC%E3%83%A0%E5%90%88%E6%88%90/id6759444148',
+        ),
+        mode: LaunchMode.externalApplication,
+      );
+      if (!launched) {
+        _showSnackBar('ページを開けませんでした。');
+      }
+    }
+  }
+
+  Future<void> _requestReviewIfNeeded() async {
+    final prefs = await SharedPreferences.getInstance();
+    final saveCount = (prefs.getInt('review_save_count') ?? 0) + 1;
+    await prefs.setInt('review_save_count', saveCount);
+
+    // 5回保存ごとにレビューを促す（ただし最大3回まで）
+    final reviewCount = prefs.getInt('review_prompt_count') ?? 0;
+    if (saveCount % 5 == 0 && reviewCount < 3) {
+      final inAppReview = InAppReview.instance;
+      if (await inAppReview.isAvailable()) {
+        await inAppReview.requestReview();
+        await prefs.setInt('review_prompt_count', reviewCount + 1);
+      }
     }
   }
 
@@ -383,7 +424,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
         actions: [
           PopupMenuButton<_AppMenuAction>(
             icon: const Icon(Icons.menu),
-            onSelected: _openExternalPage,
+            onSelected: _onMenuAction,
             itemBuilder: (context) => const [
               PopupMenuItem(
                 value: _AppMenuAction.privacyPolicy,
@@ -392,6 +433,10 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
               PopupMenuItem(
                 value: _AppMenuAction.termsOfService,
                 child: Text('利用規約'),
+              ),
+              PopupMenuItem(
+                value: _AppMenuAction.review,
+                child: Text('アプリを評価する'),
               ),
             ],
           ),
