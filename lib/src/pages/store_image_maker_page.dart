@@ -368,19 +368,14 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
   }
 
   Future<void> _openAppReview() async {
-    final inAppReview = InAppReview.instance;
-    if (await inAppReview.isAvailable()) {
-      await inAppReview.requestReview();
-    } else {
-      final launched = await launchUrl(
-        Uri.parse(
-          'https://apps.apple.com/jp/app/%E3%82%B9%E3%83%88%E3%82%A2%E3%82%A4%E3%83%A1%E3%83%BC%E3%82%B8%E4%BD%9C%E6%88%90-%E3%83%A2%E3%83%83%E3%82%AF%E3%82%A2%E3%83%83%E3%83%97%E7%94%BB%E5%83%8F-%E3%83%95%E3%83%AC%E3%83%BC%E3%83%A0%E5%90%88%E6%88%90/id6759444148',
-        ),
-        mode: LaunchMode.externalApplication,
-      );
-      if (!launched) {
-        _showSnackBar('ページを開けませんでした。');
-      }
+    final launched = await launchUrl(
+      Uri.parse(
+        'https://apps.apple.com/jp/app/id6759444148?action=write-review',
+      ),
+      mode: LaunchMode.externalApplication,
+    );
+    if (!launched) {
+      _showSnackBar('ページを開けませんでした。');
     }
   }
 
