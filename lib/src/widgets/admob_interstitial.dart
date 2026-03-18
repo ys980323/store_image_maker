@@ -20,7 +20,7 @@ class AdMobInterstitial {
         return 'ca-app-pub-3940256099942544/1033173712';
       case TargetPlatform.iOS:
         return kReleaseMode
-            ? 'ca-app-pub-8980159252766093/3697653803'
+            ? 'ca-app-pub-8980159252766093/5290378014'
             : 'ca-app-pub-3940256099942544/4411468910';
       case TargetPlatform.fuchsia:
       case TargetPlatform.linux:
