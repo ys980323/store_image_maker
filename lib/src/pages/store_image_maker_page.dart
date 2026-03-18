@@ -10,6 +10,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../image_exporter.dart';
 import '../models/store_image_models.dart';
+import '../services/preset_repository.dart';
 import '../widgets/admob_bottom_banner.dart';
 import '../widgets/admob_interstitial.dart';
 
@@ -49,11 +50,112 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
   bool _isExporting = false;
 
   final AdMobInterstitial _interstitialAd = AdMobInterstitial();
+  final PresetRepository _presetRepository = PresetRepository();
+  List<Preset> _presets = [];
 
   @override
   void initState() {
     super.initState();
     _interstitialAd.loadAd();
+    _loadPresets();
+  }
+
+  Future<void> _loadPresets() async {
+    final presets = await _presetRepository.loadAll();
+    if (mounted) {
+      setState(() {
+        _presets = presets;
+      });
+    }
+  }
+
+  Preset _createPresetFromCurrentState(String name) {
+    return Preset(
+      name: name,
+      backgroundMode: _backgroundMode,
+      titlePosition: _titlePosition,
+      titleAlignment: _titleAlignment,
+      solidColor: _solidColor,
+      gradientStartColor: _gradientStartColor,
+      gradientEndColor: _gradientEndColor,
+      titleColor: _titleColor,
+      titleFontSize: _titleFontSize,
+      phoneScale: _phoneScale,
+      showDynamicIsland: _showDynamicIsland,
+      dynamicIslandScale: _dynamicIslandScale,
+      titleText: _titleController.text,
+    );
+  }
+
+  void _applyPreset(Preset preset) {
+    setState(() {
+      _backgroundMode = preset.backgroundMode;
+      _titlePosition = preset.titlePosition;
+      _titleAlignment = preset.titleAlignment;
+      _solidColor = preset.solidColor;
+      _gradientStartColor = preset.gradientStartColor;
+      _gradientEndColor = preset.gradientEndColor;
+      _titleColor = preset.titleColor;
+      _titleFontSize = preset.titleFontSize;
+      _phoneScale = preset.phoneScale;
+      _showDynamicIsland = preset.showDynamicIsland;
+      _dynamicIslandScale = preset.dynamicIslandScale;
+      _titleController.text = preset.titleText;
+      _generatedBytes = null;
+    });
+  }
+
+  Future<void> _savePreset() async {
+    final name = await _showPresetNameDialog();
+    if (name == null || name.trim().isEmpty) return;
+
+    final preset = _createPresetFromCurrentState(name.trim());
+    await _presetRepository.add(preset);
+    await _loadPresets();
+    if (mounted) {
+      _showSnackBar('プリセット「$name」を保存しました');
+    }
+  }
+
+  Future<void> _deletePreset(int index) async {
+    final name = _presets[index].name;
+    await _presetRepository.deleteAt(index);
+    await _loadPresets();
+    if (mounted) {
+      _showSnackBar('プリセット「$name」を削除しました');
+    }
+  }
+
+  Future<String?> _showPresetNameDialog() async {
+    final controller = TextEditingController();
+    final result = await showDialog<String>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('プリセット名'),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            decoration: const InputDecoration(hintText: 'プリセット名を入力'),
+            onSubmitted: (value) =>
+                Navigator.of(dialogContext).pop(value),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('キャンセル'),
+            ),
+            FilledButton(
+              onPressed: () =>
+                  Navigator.of(dialogContext).pop(controller.text),
+              child: const Text('保存'),
+            ),
+          ],
+        );
+      },
+    );
+    controller.dispose();
+    return result;
   }
 
   @override
@@ -317,6 +419,8 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
               final controls = Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  _buildPresetCard(),
+                  const SizedBox(height: 12),
                   _buildInputCard(),
                   const SizedBox(height: 12),
                   _buildBackgroundCard(),
@@ -409,6 +513,100 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
                 ],
               ),
             ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPresetCard() {
+    return _buildPanel(
+      icon: Icons.bookmarks_rounded,
+      title: 'プリセット',
+      subtitle: '設定を保存・読み込みできます',
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          FilledButton.tonalIcon(
+            onPressed: _savePreset,
+            icon: const Icon(Icons.save_rounded),
+            label: const Text('現在の設定をプリセットとして保存'),
+            style: FilledButton.styleFrom(
+              minimumSize: const Size(double.infinity, 46),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(14),
+              ),
+            ),
+          ),
+          if (_presets.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            const Text(
+              '保存済みプリセット',
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 8),
+            ...List.generate(_presets.length, (index) {
+              final preset = _presets[index];
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 6),
+                child: Material(
+                  color: Theme.of(context)
+                      .colorScheme
+                      .surfaceContainerLowest,
+                  borderRadius: BorderRadius.circular(12),
+                  clipBehavior: Clip.antiAlias,
+                  child: ListTile(
+                    dense: true,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: BorderSide(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .outlineVariant,
+                      ),
+                    ),
+                    leading: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        gradient: preset.backgroundMode ==
+                                BackgroundMode.gradient
+                            ? LinearGradient(
+                                colors: [
+                                  preset.gradientStartColor,
+                                  preset.gradientEndColor,
+                                ],
+                              )
+                            : null,
+                        color: preset.backgroundMode ==
+                                BackgroundMode.solid
+                            ? preset.solidColor
+                            : null,
+                        border: Border.all(
+                          color: Colors.black.withValues(alpha: 0.12),
+                        ),
+                      ),
+                    ),
+                    title: Text(
+                      preset.name,
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    trailing: IconButton(
+                      icon: const Icon(Icons.delete_outline, size: 20),
+                      tooltip: '削除',
+                      onPressed: () => _deletePreset(index),
+                    ),
+                    onTap: () {
+                      _applyPreset(preset);
+                      _showSnackBar(
+                        'プリセット「${preset.name}」を適用しました',
+                      );
+                    },
+                  ),
+                ),
+              );
+            }),
           ],
         ],
       ),
