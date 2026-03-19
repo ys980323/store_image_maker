@@ -144,6 +144,13 @@ class Preset {
     required this.showDynamicIsland,
     required this.dynamicIslandScale,
     required this.titleText,
+    this.subtitleText = '',
+    this.subtitleFontSize = 20,
+    this.subtitleColor = Colors.white,
+    this.titleLineHeight = 1.2,
+    this.titleLetterSpacing = 0,
+    this.subtitleLineHeight = 1.4,
+    this.subtitleLetterSpacing = 0,
   });
 
   final String name;
@@ -159,6 +166,13 @@ class Preset {
   final bool showDynamicIsland;
   final double dynamicIslandScale;
   final String titleText;
+  final String subtitleText;
+  final double subtitleFontSize;
+  final Color subtitleColor;
+  final double titleLineHeight;
+  final double titleLetterSpacing;
+  final double subtitleLineHeight;
+  final double subtitleLetterSpacing;
 
   Map<String, dynamic> toJson() => {
         'name': name,
@@ -174,6 +188,13 @@ class Preset {
         'showDynamicIsland': showDynamicIsland,
         'dynamicIslandScale': dynamicIslandScale,
         'titleText': titleText,
+        'subtitleText': subtitleText,
+        'subtitleFontSize': subtitleFontSize,
+        'subtitleColor': subtitleColor.toARGB32(),
+        'titleLineHeight': titleLineHeight,
+        'titleLetterSpacing': titleLetterSpacing,
+        'subtitleLineHeight': subtitleLineHeight,
+        'subtitleLetterSpacing': subtitleLetterSpacing,
       };
 
   factory Preset.fromJson(Map<String, dynamic> json) => Preset(
@@ -190,6 +211,20 @@ class Preset {
         showDynamicIsland: json['showDynamicIsland'] as bool,
         dynamicIslandScale: (json['dynamicIslandScale'] as num).toDouble(),
         titleText: json['titleText'] as String,
+        subtitleText: (json['subtitleText'] as String?) ?? '',
+        subtitleFontSize:
+            (json['subtitleFontSize'] as num?)?.toDouble() ?? 20,
+        subtitleColor: json['subtitleColor'] != null
+            ? Color(json['subtitleColor'] as int)
+            : Colors.white,
+        titleLineHeight:
+            (json['titleLineHeight'] as num?)?.toDouble() ?? 1.2,
+        titleLetterSpacing:
+            (json['titleLetterSpacing'] as num?)?.toDouble() ?? 0,
+        subtitleLineHeight:
+            (json['subtitleLineHeight'] as num?)?.toDouble() ?? 1.4,
+        subtitleLetterSpacing:
+            (json['subtitleLetterSpacing'] as num?)?.toDouble() ?? 0,
       );
 
   String encode() => jsonEncode(toJson());

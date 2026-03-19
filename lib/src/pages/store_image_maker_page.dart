@@ -29,6 +29,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
   final TextEditingController _titleController = TextEditingController(
     text: 'あなたのアプリを、もっと魅力的に',
   );
+  final TextEditingController _subtitleController = TextEditingController();
   final GlobalKey _captureKey = GlobalKey();
 
   Uint8List? _screenshotBytes;
@@ -43,8 +44,14 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
   Color _gradientStartColor = const Color(0xFF1E3A8A);
   Color _gradientEndColor = const Color(0xFF0EA5E9);
   Color _titleColor = Colors.white;
+  Color _subtitleColor = Colors.white;
 
   double _titleFontSize = 46;
+  double _subtitleFontSize = 20;
+  double _titleLineHeight = 1.2;
+  double _titleLetterSpacing = 0;
+  double _subtitleLineHeight = 1.4;
+  double _subtitleLetterSpacing = 0;
   double _phoneScale = 0.66;
   bool _showDynamicIsland = false;
   double _dynamicIslandScale = 1.0;
@@ -86,6 +93,13 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
       showDynamicIsland: _showDynamicIsland,
       dynamicIslandScale: _dynamicIslandScale,
       titleText: _titleController.text,
+      subtitleText: _subtitleController.text,
+      subtitleFontSize: _subtitleFontSize,
+      subtitleColor: _subtitleColor,
+      titleLineHeight: _titleLineHeight,
+      titleLetterSpacing: _titleLetterSpacing,
+      subtitleLineHeight: _subtitleLineHeight,
+      subtitleLetterSpacing: _subtitleLetterSpacing,
     );
   }
 
@@ -103,6 +117,13 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
       _showDynamicIsland = preset.showDynamicIsland;
       _dynamicIslandScale = preset.dynamicIslandScale;
       _titleController.text = preset.titleText;
+      _subtitleController.text = preset.subtitleText;
+      _subtitleFontSize = preset.subtitleFontSize;
+      _subtitleColor = preset.subtitleColor;
+      _titleLineHeight = preset.titleLineHeight;
+      _titleLetterSpacing = preset.titleLetterSpacing;
+      _subtitleLineHeight = preset.subtitleLineHeight;
+      _subtitleLetterSpacing = preset.subtitleLetterSpacing;
       _generatedBytes = null;
     });
   }
@@ -164,6 +185,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
   void dispose() {
     _interstitialAd.dispose();
     _titleController.dispose();
+    _subtitleController.dispose();
     super.dispose();
   }
 
@@ -835,28 +857,62 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
   }
 
   Widget _buildTitleText() {
+    final hasSubtitle = _subtitleController.text.trim().isNotEmpty;
     return SizedBox(
       width: double.infinity,
-      child: Text(
-        _titleController.text.trim().isEmpty
-            ? 'キャッチコピーを入力してください'
-            : _titleController.text,
-        textAlign: _titleTextAlign,
-        maxLines: 3,
-        overflow: TextOverflow.ellipsis,
-        style: TextStyle(
-          color: _titleColor,
-          fontWeight: FontWeight.w800,
-          fontSize: _titleFontSize,
-          height: 1.2,
-          shadows: [
-            Shadow(
-              color: Colors.black.withValues(alpha: 0.2),
-              blurRadius: 12,
-              offset: const Offset(0, 2),
+      child: Column(
+        crossAxisAlignment: switch (_titleAlignment) {
+          TitleAlignment.left => CrossAxisAlignment.start,
+          TitleAlignment.center => CrossAxisAlignment.center,
+          TitleAlignment.right => CrossAxisAlignment.end,
+        },
+        children: [
+          Text(
+            _titleController.text.trim().isEmpty
+                ? 'キャッチコピーを入力してください'
+                : _titleController.text,
+            textAlign: _titleTextAlign,
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: _titleColor,
+              fontWeight: FontWeight.w800,
+              fontSize: _titleFontSize,
+              height: _titleLineHeight,
+              letterSpacing: _titleLetterSpacing,
+              shadows: [
+                Shadow(
+                  color: Colors.black.withValues(alpha: 0.2),
+                  blurRadius: 12,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+          ),
+          if (hasSubtitle) ...[
+            const SizedBox(height: 8),
+            Text(
+              _subtitleController.text,
+              textAlign: _titleTextAlign,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: _subtitleColor,
+                fontWeight: FontWeight.w500,
+                fontSize: _subtitleFontSize,
+                height: _subtitleLineHeight,
+                letterSpacing: _subtitleLetterSpacing,
+                shadows: [
+                  Shadow(
+                    color: Colors.black.withValues(alpha: 0.15),
+                    blurRadius: 8,
+                    offset: const Offset(0, 1),
+                  ),
+                ],
+              ),
             ),
           ],
-        ),
+        ],
       ),
     );
   }
@@ -1261,11 +1317,13 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          const Text('タイトル', style: TextStyle(fontWeight: FontWeight.w600)),
+          const SizedBox(height: 6),
           TextField(
             controller: _titleController,
             maxLines: 3,
             textInputAction: TextInputAction.newline,
-            decoration: const InputDecoration(hintText: '任意のキャッチコピーを入力'),
+            decoration: const InputDecoration(hintText: 'タイトルを入力'),
             onTapOutside: (_) {
               FocusManager.instance.primaryFocus?.unfocus();
             },
@@ -1302,7 +1360,110 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
               });
             },
           ),
-          const SizedBox(height: 10),
+          Text('行間: ${_titleLineHeight.toStringAsFixed(1)}'),
+          Slider(
+            value: _titleLineHeight,
+            min: 0.8,
+            max: 3.0,
+            divisions: 22,
+            label: _titleLineHeight.toStringAsFixed(1),
+            onChanged: (value) {
+              setState(() {
+                _titleLineHeight = value;
+                _generatedBytes = null;
+              });
+            },
+          ),
+          Text('文字間隔: ${_titleLetterSpacing.toStringAsFixed(1)}'),
+          Slider(
+            value: _titleLetterSpacing,
+            min: -2,
+            max: 20,
+            divisions: 22,
+            label: _titleLetterSpacing.toStringAsFixed(1),
+            onChanged: (value) {
+              setState(() {
+                _titleLetterSpacing = value;
+                _generatedBytes = null;
+              });
+            },
+          ),
+          const Divider(height: 24),
+          const Text('サブテキスト',
+              style: TextStyle(fontWeight: FontWeight.w600)),
+          const SizedBox(height: 6),
+          TextField(
+            controller: _subtitleController,
+            maxLines: 3,
+            textInputAction: TextInputAction.newline,
+            decoration:
+                const InputDecoration(hintText: 'サブテキストを入力（任意）'),
+            onTapOutside: (_) {
+              FocusManager.instance.primaryFocus?.unfocus();
+            },
+            onChanged: (_) {
+              setState(() {
+                _generatedBytes = null;
+              });
+            },
+          ),
+          const SizedBox(height: 12),
+          const Text('サブテキスト文字色',
+              style: TextStyle(fontWeight: FontWeight.w600)),
+          const SizedBox(height: 6),
+          _buildPalette(
+            selectedColor: _subtitleColor,
+            onSelected: (value) {
+              setState(() {
+                _subtitleColor = value;
+                _generatedBytes = null;
+              });
+            },
+          ),
+          const SizedBox(height: 12),
+          Text('フォントサイズ: ${_subtitleFontSize.toStringAsFixed(0)}'),
+          Slider(
+            value: _subtitleFontSize,
+            min: 12,
+            max: 48,
+            divisions: 36,
+            label: _subtitleFontSize.toStringAsFixed(0),
+            onChanged: (value) {
+              setState(() {
+                _subtitleFontSize = value;
+                _generatedBytes = null;
+              });
+            },
+          ),
+          Text('行間: ${_subtitleLineHeight.toStringAsFixed(1)}'),
+          Slider(
+            value: _subtitleLineHeight,
+            min: 0.8,
+            max: 3.0,
+            divisions: 22,
+            label: _subtitleLineHeight.toStringAsFixed(1),
+            onChanged: (value) {
+              setState(() {
+                _subtitleLineHeight = value;
+                _generatedBytes = null;
+              });
+            },
+          ),
+          Text('文字間隔: ${_subtitleLetterSpacing.toStringAsFixed(1)}'),
+          Slider(
+            value: _subtitleLetterSpacing,
+            min: -2,
+            max: 20,
+            divisions: 22,
+            label: _subtitleLetterSpacing.toStringAsFixed(1),
+            onChanged: (value) {
+              setState(() {
+                _subtitleLetterSpacing = value;
+                _generatedBytes = null;
+              });
+            },
+          ),
+          const Divider(height: 24),
           SegmentedButton<TitlePosition>(
             segments: const [
               ButtonSegment(
