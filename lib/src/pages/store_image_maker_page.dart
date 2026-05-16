@@ -12,9 +12,9 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../image_exporter.dart';
 import '../models/store_image_models.dart';
+import '../services/admob_app_open_ad.dart';
 import '../services/preset_repository.dart';
 import '../widgets/admob_bottom_banner.dart';
-import '../widgets/admob_interstitial.dart';
 
 enum _AppMenuAction { privacyPolicy, termsOfService, review }
 
@@ -31,6 +31,8 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
   );
   final TextEditingController _subtitleController = TextEditingController();
   final GlobalKey _captureKey = GlobalKey();
+  final GlobalKey _scrollViewportKey = GlobalKey();
+  final ScrollController _scrollController = ScrollController();
 
   Uint8List? _screenshotBytes;
   Uint8List? _generatedBytes;
@@ -57,15 +59,27 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
   double _dynamicIslandScale = 1.0;
 
   bool _isExporting = false;
+  bool _isFloatingPreviewVisible = false;
+  bool _isFloatingPreviewDismissed = false;
+  bool _previewVisibilityUpdateScheduled = false;
 
-  final AdMobInterstitial _interstitialAd = AdMobInterstitial();
+  static const double _floatingPreviewSwipeVelocityThreshold = 260;
+
+  final AdMobAppOpenAd _appOpenAd = AdMobAppOpenAd();
   final PresetRepository _presetRepository = PresetRepository();
   List<Preset> _presets = [];
 
   @override
   void initState() {
     super.initState();
-    _interstitialAd.loadAd();
+    _scrollController.addListener(_schedulePreviewVisibilityUpdate);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) {
+        return;
+      }
+      _appOpenAd.loadAndShowOnStartup();
+      _schedulePreviewVisibilityUpdate();
+    });
     _loadPresets();
   }
 
@@ -160,8 +174,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
             controller: controller,
             autofocus: true,
             decoration: const InputDecoration(hintText: 'プリセット名を入力'),
-            onSubmitted: (value) =>
-                Navigator.of(dialogContext).pop(value),
+            onSubmitted: (value) => Navigator.of(dialogContext).pop(value),
           ),
           actions: [
             TextButton(
@@ -169,8 +182,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
               child: const Text('キャンセル'),
             ),
             FilledButton(
-              onPressed: () =>
-                  Navigator.of(dialogContext).pop(controller.text),
+              onPressed: () => Navigator.of(dialogContext).pop(controller.text),
               child: const Text('保存'),
             ),
           ],
@@ -183,7 +195,9 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
 
   @override
   void dispose() {
-    _interstitialAd.dispose();
+    _appOpenAd.dispose();
+    _scrollController.removeListener(_schedulePreviewVisibilityUpdate);
+    _scrollController.dispose();
     _titleController.dispose();
     _subtitleController.dispose();
     super.dispose();
@@ -302,7 +316,6 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
           return;
         }
         _showSnackBar('画像を保存しました: $path');
-        _interstitialAd.onImageSaved();
         _requestReviewIfNeeded();
       } on UnsupportedError catch (_) {
         _showSnackBar('PNGは生成しました。現在のプラットフォームは保存非対応です。');
@@ -358,6 +371,82 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
     }
 
     return _normalizeOutputResolution(byteData.buffer.asUint8List());
+  }
+
+  void _schedulePreviewVisibilityUpdate() {
+    if (_previewVisibilityUpdateScheduled) {
+      return;
+    }
+
+    _previewVisibilityUpdateScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _previewVisibilityUpdateScheduled = false;
+      _updateFloatingPreviewVisibility();
+    });
+  }
+
+  void _updateFloatingPreviewVisibility() {
+    if (!mounted) {
+      return;
+    }
+
+    final previewObject = _captureKey.currentContext?.findRenderObject();
+    final viewportObject = _scrollViewportKey.currentContext
+        ?.findRenderObject();
+    var shouldShow = false;
+
+    if (previewObject is RenderBox &&
+        viewportObject is RenderBox &&
+        previewObject.attached &&
+        viewportObject.attached &&
+        previewObject.hasSize &&
+        viewportObject.hasSize) {
+      final previewOffset = previewObject.localToGlobal(
+        Offset.zero,
+        ancestor: viewportObject,
+      );
+      final previewRect = previewOffset & previewObject.size;
+      final viewportRect = Offset.zero & viewportObject.size;
+      final visibleLeft = math.max(previewRect.left, viewportRect.left);
+      final visibleTop = math.max(previewRect.top, viewportRect.top);
+      final visibleRight = math.min(previewRect.right, viewportRect.right);
+      final visibleBottom = math.min(previewRect.bottom, viewportRect.bottom);
+      final visibleWidth = math.max(0.0, visibleRight - visibleLeft);
+      final visibleHeight = math.max(0.0, visibleBottom - visibleTop);
+      final previewArea = previewRect.width * previewRect.height;
+      final visibleFraction = previewArea <= 0
+          ? 0.0
+          : (visibleWidth * visibleHeight) / previewArea;
+
+      final isFullyOutside =
+          previewRect.bottom <= viewportRect.top + 12 ||
+          previewRect.top >= viewportRect.bottom - 12;
+      final isMostlyScrolledPastTop =
+          previewRect.top < viewportRect.top - 12 && visibleFraction < 0.72;
+      shouldShow = isFullyOutside || isMostlyScrolledPastTop;
+    }
+
+    if (_isFloatingPreviewVisible != shouldShow) {
+      setState(() {
+        _isFloatingPreviewVisible = shouldShow;
+      });
+    }
+  }
+
+  void _dismissFloatingPreview() {
+    if (!_isFloatingPreviewDismissed) {
+      setState(() {
+        _isFloatingPreviewDismissed = true;
+      });
+    }
+  }
+
+  void _restoreFloatingPreview() {
+    if (_isFloatingPreviewDismissed) {
+      setState(() {
+        _isFloatingPreviewDismissed = false;
+      });
+    }
   }
 
   void _showSnackBar(String message) {
@@ -477,6 +566,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
           child: LayoutBuilder(
             builder: (context, constraints) {
               final isWideLayout = constraints.maxWidth >= 1080;
+              _schedulePreviewVisibilityUpdate();
 
               final controls = Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -493,25 +583,34 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
                 ],
               );
 
-              return SingleChildScrollView(
-                padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
-                child: isWideLayout
-                    ? Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(flex: 6, child: _buildPreviewPanel()),
-                          const SizedBox(width: 16),
-                          Expanded(flex: 5, child: controls),
-                        ],
-                      )
-                    : Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          _buildPreviewPanel(),
-                          const SizedBox(height: 12),
-                          controls,
-                        ],
-                      ),
+              return Stack(
+                key: _scrollViewportKey,
+                children: [
+                  Positioned.fill(
+                    child: SingleChildScrollView(
+                      controller: _scrollController,
+                      padding: const EdgeInsets.fromLTRB(16, 14, 16, 24),
+                      child: isWideLayout
+                          ? Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Expanded(flex: 6, child: _buildPreviewPanel()),
+                                const SizedBox(width: 16),
+                                Expanded(flex: 5, child: controls),
+                              ],
+                            )
+                          : Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                _buildPreviewPanel(),
+                                const SizedBox(height: 12),
+                                controls,
+                              ],
+                            ),
+                    ),
+                  ),
+                  _buildFloatingPreviewOverlay(constraints),
+                ],
               );
             },
           ),
@@ -581,6 +680,215 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
     );
   }
 
+  Widget _buildFloatingPreviewOverlay(BoxConstraints constraints) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final edgePadding = constraints.maxWidth < 420 ? 10.0 : 16.0;
+    final previewWidth = constraints.maxWidth < 600
+        ? math.min(116.0, math.max(94.0, constraints.maxWidth * 0.28))
+        : math.min(154.0, math.max(128.0, constraints.maxWidth * 0.14));
+    final designWidth = math.min(
+      420.0,
+      math.max(320.0, constraints.maxWidth - 32),
+    );
+    final showPreview =
+        _isFloatingPreviewVisible && !_isFloatingPreviewDismissed;
+    final showHandle = _isFloatingPreviewVisible && _isFloatingPreviewDismissed;
+
+    return Positioned.fill(
+      child: Stack(
+        children: [
+          Positioned(
+            right: edgePadding,
+            bottom: edgePadding,
+            child: IgnorePointer(
+              ignoring: !showPreview,
+              child: AnimatedSlide(
+                offset: showPreview ? Offset.zero : const Offset(0.35, 0),
+                duration: const Duration(milliseconds: 180),
+                curve: Curves.easeOutCubic,
+                child: AnimatedOpacity(
+                  opacity: showPreview ? 1 : 0,
+                  duration: const Duration(milliseconds: 180),
+                  curve: Curves.easeOutCubic,
+                  child: AnimatedScale(
+                    scale: showPreview ? 1 : 0.94,
+                    duration: const Duration(milliseconds: 180),
+                    curve: Curves.easeOutCubic,
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onHorizontalDragEnd: (details) {
+                        final velocity = details.primaryVelocity ?? 0;
+                        if (velocity > _floatingPreviewSwipeVelocityThreshold) {
+                          _dismissFloatingPreview();
+                        }
+                      },
+                      child: Tooltip(
+                        message: 'プレビューを拡大',
+                        child: Material(
+                          elevation: 14,
+                          shadowColor: Colors.black.withValues(alpha: 0.24),
+                          color: colorScheme.surface,
+                          borderRadius: BorderRadius.circular(18),
+                          clipBehavior: Clip.antiAlias,
+                          child: InkWell(
+                            onTap: _showPreviewDialog,
+                            child: Container(
+                              width: previewWidth,
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(18),
+                                border: Border.all(
+                                  color: colorScheme.primary.withValues(
+                                    alpha: 0.22,
+                                  ),
+                                ),
+                              ),
+                              child: Stack(
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: AspectRatio(
+                                      aspectRatio: kStoreImageOutputAspectRatio,
+                                      child: FittedBox(
+                                        fit: BoxFit.cover,
+                                        clipBehavior: Clip.hardEdge,
+                                        child: SizedBox(
+                                          width: designWidth,
+                                          height:
+                                              designWidth /
+                                              kStoreImageOutputAspectRatio,
+                                          child: _buildComposedPreview(),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    top: 5,
+                                    right: 5,
+                                    child: DecoratedBox(
+                                      decoration: BoxDecoration(
+                                        color: colorScheme.surface.withValues(
+                                          alpha: 0.88,
+                                        ),
+                                        borderRadius: BorderRadius.circular(
+                                          999,
+                                        ),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: Colors.black.withValues(
+                                              alpha: 0.14,
+                                            ),
+                                            blurRadius: 8,
+                                          ),
+                                        ],
+                                      ),
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(4),
+                                        child: Icon(
+                                          Icons.open_in_full_rounded,
+                                          size: 13,
+                                          color: colorScheme.onSurfaceVariant,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            right: 0,
+            bottom: edgePadding + 28,
+            child: IgnorePointer(
+              ignoring: !showHandle,
+              child: AnimatedSlide(
+                offset: showHandle ? Offset.zero : const Offset(1, 0),
+                duration: const Duration(milliseconds: 180),
+                curve: Curves.easeOutCubic,
+                child: AnimatedOpacity(
+                  opacity: showHandle ? 1 : 0,
+                  duration: const Duration(milliseconds: 180),
+                  curve: Curves.easeOutCubic,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onHorizontalDragEnd: (details) {
+                      final velocity = details.primaryVelocity ?? 0;
+                      if (velocity < -_floatingPreviewSwipeVelocityThreshold) {
+                        _restoreFloatingPreview();
+                      }
+                    },
+                    child: Tooltip(
+                      message: 'プレビューを戻す',
+                      child: Material(
+                        elevation: 10,
+                        shadowColor: Colors.black.withValues(alpha: 0.2),
+                        color: colorScheme.surface,
+                        borderRadius: const BorderRadius.horizontal(
+                          left: Radius.circular(18),
+                        ),
+                        clipBehavior: Clip.antiAlias,
+                        child: InkWell(
+                          onTap: _restoreFloatingPreview,
+                          child: Container(
+                            width: 40,
+                            height: 66,
+                            decoration: BoxDecoration(
+                              border: Border(
+                                left: BorderSide(
+                                  color: colorScheme.primary.withValues(
+                                    alpha: 0.22,
+                                  ),
+                                ),
+                                top: BorderSide(
+                                  color: colorScheme.primary.withValues(
+                                    alpha: 0.14,
+                                  ),
+                                ),
+                                bottom: BorderSide(
+                                  color: colorScheme.primary.withValues(
+                                    alpha: 0.14,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.chevron_left_rounded,
+                                  size: 22,
+                                  color: colorScheme.primary,
+                                ),
+                                const SizedBox(height: 1),
+                                Icon(
+                                  Icons.preview_rounded,
+                                  size: 16,
+                                  color: colorScheme.onSurfaceVariant,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildPresetCard() {
     return _buildPanel(
       icon: Icons.bookmarks_rounded,
@@ -612,9 +920,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
               return Padding(
                 padding: const EdgeInsets.only(bottom: 6),
                 child: Material(
-                  color: Theme.of(context)
-                      .colorScheme
-                      .surfaceContainerLowest,
+                  color: Theme.of(context).colorScheme.surfaceContainerLowest,
                   borderRadius: BorderRadius.circular(12),
                   clipBehavior: Clip.antiAlias,
                   child: ListTile(
@@ -622,9 +928,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                       side: BorderSide(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .outlineVariant,
+                        color: Theme.of(context).colorScheme.outlineVariant,
                       ),
                     ),
                     leading: Container(
@@ -632,8 +936,8 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
                       height: 32,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(8),
-                        gradient: preset.backgroundMode ==
-                                BackgroundMode.gradient
+                        gradient:
+                            preset.backgroundMode == BackgroundMode.gradient
                             ? LinearGradient(
                                 colors: [
                                   preset.gradientStartColor,
@@ -641,8 +945,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
                                 ],
                               )
                             : null,
-                        color: preset.backgroundMode ==
-                                BackgroundMode.solid
+                        color: preset.backgroundMode == BackgroundMode.solid
                             ? preset.solidColor
                             : null,
                         border: Border.all(
@@ -661,9 +964,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
                     ),
                     onTap: () {
                       _applyPreset(preset);
-                      _showSnackBar(
-                        'プリセット「${preset.name}」を適用しました',
-                      );
+                      _showSnackBar('プリセット「${preset.name}」を適用しました');
                     },
                   ),
                 ),
@@ -1389,15 +1690,13 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
             },
           ),
           const Divider(height: 24),
-          const Text('サブテキスト',
-              style: TextStyle(fontWeight: FontWeight.w600)),
+          const Text('サブテキスト', style: TextStyle(fontWeight: FontWeight.w600)),
           const SizedBox(height: 6),
           TextField(
             controller: _subtitleController,
             maxLines: 3,
             textInputAction: TextInputAction.newline,
-            decoration:
-                const InputDecoration(hintText: 'サブテキストを入力（任意）'),
+            decoration: const InputDecoration(hintText: 'サブテキストを入力（任意）'),
             onTapOutside: (_) {
               FocusManager.instance.primaryFocus?.unfocus();
             },
@@ -1408,8 +1707,10 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
             },
           ),
           const SizedBox(height: 12),
-          const Text('サブテキスト文字色',
-              style: TextStyle(fontWeight: FontWeight.w600)),
+          const Text(
+            'サブテキスト文字色',
+            style: TextStyle(fontWeight: FontWeight.w600),
+          ),
           const SizedBox(height: 6),
           _buildPalette(
             selectedColor: _subtitleColor,

@@ -3,24 +3,31 @@ import Photos
 import UIKit
 
 @main
-@objc class AppDelegate: FlutterAppDelegate {
+@objc class AppDelegate: FlutterAppDelegate, FlutterImplicitEngineDelegate {
   private let imageExporterChannelName = "store_image_maker/image_exporter"
 
   override func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-    if let controller = window?.rootViewController as? FlutterViewController {
-      let channel = FlutterMethodChannel(
-        name: imageExporterChannelName,
-        binaryMessenger: controller.binaryMessenger
-      )
-      channel.setMethodCallHandler { [weak self] call, result in
-        self?.handleImageExport(call: call, result: result)
-      }
-    }
-    GeneratedPluginRegistrant.register(with: self)
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)
+  }
+
+  func didInitializeImplicitFlutterEngine(_ engineBridge: FlutterImplicitEngineBridge) {
+    GeneratedPluginRegistrant.register(with: engineBridge.pluginRegistry)
+    configureImageExporterChannel(
+      binaryMessenger: engineBridge.applicationRegistrar.messenger()
+    )
+  }
+
+  private func configureImageExporterChannel(binaryMessenger: FlutterBinaryMessenger) {
+    let channel = FlutterMethodChannel(
+      name: imageExporterChannelName,
+      binaryMessenger: binaryMessenger
+    )
+    channel.setMethodCallHandler { [weak self] call, result in
+      self?.handleImageExport(call: call, result: result)
+    }
   }
 
   private func handleImageExport(call: FlutterMethodCall, result: @escaping FlutterResult) {
