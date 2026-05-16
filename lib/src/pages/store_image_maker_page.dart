@@ -35,7 +35,6 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
   final ScrollController _scrollController = ScrollController();
 
   Uint8List? _screenshotBytes;
-  Uint8List? _generatedBytes;
   Size? _screenshotPixelSize;
 
   BackgroundMode _backgroundMode = BackgroundMode.gradient;
@@ -138,7 +137,6 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
       _titleLetterSpacing = preset.titleLetterSpacing;
       _subtitleLineHeight = preset.subtitleLineHeight;
       _subtitleLetterSpacing = preset.subtitleLetterSpacing;
-      _generatedBytes = null;
     });
   }
 
@@ -216,7 +214,6 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
     setState(() {
       _screenshotBytes = bytes;
       _screenshotPixelSize = screenshotSize;
-      _generatedBytes = null;
     });
   }
 
@@ -305,10 +302,6 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
       if (!mounted) {
         return;
       }
-
-      setState(() {
-        _generatedBytes = bytes;
-      });
 
       try {
         final path = await savePngBytes(bytes);
@@ -648,33 +641,6 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
               ),
             ),
           ),
-          if (_generatedBytes != null) ...[
-            const SizedBox(height: 14),
-            Container(
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.surfaceContainerLowest,
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(
-                  color: Theme.of(context).colorScheme.outlineVariant,
-                ),
-              ),
-              padding: const EdgeInsets.all(10),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    '生成結果',
-                    style: TextStyle(fontWeight: FontWeight.w700),
-                  ),
-                  const SizedBox(height: 8),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(14),
-                    child: Image.memory(_generatedBytes!),
-                  ),
-                ],
-              ),
-            ),
-          ],
         ],
       ),
     );
@@ -1495,7 +1461,6 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
             onChanged: (value) {
               setState(() {
                 _showDynamicIsland = value;
-                _generatedBytes = null;
               });
             },
           ),
@@ -1511,7 +1476,6 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
                 ? (value) {
                     setState(() {
                       _dynamicIslandScale = value;
-                      _generatedBytes = null;
                     });
                   }
                 : null,
@@ -1527,7 +1491,6 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
             onChanged: (value) {
               setState(() {
                 _phoneScale = value;
-                _generatedBytes = null;
               });
             },
           ),
@@ -1561,7 +1524,6 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
             onSelectionChanged: (selection) {
               setState(() {
                 _backgroundMode = selection.first;
-                _generatedBytes = null;
               });
             },
           ),
@@ -1574,7 +1536,6 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
               onSelected: (value) {
                 setState(() {
                   _solidColor = value;
-                  _generatedBytes = null;
                 });
               },
             ),
@@ -1586,7 +1547,6 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
               onSelected: (value) {
                 setState(() {
                   _gradientStartColor = value;
-                  _generatedBytes = null;
                 });
               },
             ),
@@ -1598,7 +1558,6 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
               onSelected: (value) {
                 setState(() {
                   _gradientEndColor = value;
-                  _generatedBytes = null;
                 });
               },
             ),
@@ -1629,9 +1588,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
               FocusManager.instance.primaryFocus?.unfocus();
             },
             onChanged: (_) {
-              setState(() {
-                _generatedBytes = null;
-              });
+              setState(() {});
             },
           ),
           const SizedBox(height: 12),
@@ -1642,7 +1599,6 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
             onSelected: (value) {
               setState(() {
                 _titleColor = value;
-                _generatedBytes = null;
               });
             },
           ),
@@ -1657,7 +1613,6 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
             onChanged: (value) {
               setState(() {
                 _titleFontSize = value;
-                _generatedBytes = null;
               });
             },
           ),
@@ -1671,7 +1626,6 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
             onChanged: (value) {
               setState(() {
                 _titleLineHeight = value;
-                _generatedBytes = null;
               });
             },
           ),
@@ -1685,7 +1639,6 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
             onChanged: (value) {
               setState(() {
                 _titleLetterSpacing = value;
-                _generatedBytes = null;
               });
             },
           ),
@@ -1701,9 +1654,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
               FocusManager.instance.primaryFocus?.unfocus();
             },
             onChanged: (_) {
-              setState(() {
-                _generatedBytes = null;
-              });
+              setState(() {});
             },
           ),
           const SizedBox(height: 12),
@@ -1717,7 +1668,6 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
             onSelected: (value) {
               setState(() {
                 _subtitleColor = value;
-                _generatedBytes = null;
               });
             },
           ),
@@ -1732,7 +1682,6 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
             onChanged: (value) {
               setState(() {
                 _subtitleFontSize = value;
-                _generatedBytes = null;
               });
             },
           ),
@@ -1746,7 +1695,6 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
             onChanged: (value) {
               setState(() {
                 _subtitleLineHeight = value;
-                _generatedBytes = null;
               });
             },
           ),
@@ -1760,7 +1708,6 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
             onChanged: (value) {
               setState(() {
                 _subtitleLetterSpacing = value;
-                _generatedBytes = null;
               });
             },
           ),
@@ -1782,7 +1729,6 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
             onSelectionChanged: (selection) {
               setState(() {
                 _titlePosition = selection.first;
-                _generatedBytes = null;
               });
             },
           ),
@@ -1809,7 +1755,6 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
             onSelectionChanged: (selection) {
               setState(() {
                 _titleAlignment = selection.first;
-                _generatedBytes = null;
               });
             },
           ),
