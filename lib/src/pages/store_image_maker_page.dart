@@ -36,6 +36,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
 
   Uint8List? _screenshotBytes;
   Size? _screenshotPixelSize;
+  Size? _previewLayoutSize;
 
   BackgroundMode _backgroundMode = BackgroundMode.gradient;
   TitlePosition _titlePosition = TitlePosition.top;
@@ -387,6 +388,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
     final viewportObject = _scrollViewportKey.currentContext
         ?.findRenderObject();
     var shouldShow = false;
+    var previewLayoutSize = _previewLayoutSize;
 
     if (previewObject is RenderBox &&
         viewportObject is RenderBox &&
@@ -394,6 +396,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
         viewportObject.attached &&
         previewObject.hasSize &&
         viewportObject.hasSize) {
+      previewLayoutSize = previewObject.size;
       final previewOffset = previewObject.localToGlobal(
         Offset.zero,
         ancestor: viewportObject,
@@ -419,11 +422,25 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
       shouldShow = isFullyOutside || isMostlyScrolledPastTop;
     }
 
-    if (_isFloatingPreviewVisible != shouldShow) {
+    final layoutSizeChanged = !_isSamePreviewLayoutSize(
+      _previewLayoutSize,
+      previewLayoutSize,
+    );
+    if (_isFloatingPreviewVisible != shouldShow || layoutSizeChanged) {
       setState(() {
         _isFloatingPreviewVisible = shouldShow;
+        _previewLayoutSize = previewLayoutSize;
       });
     }
+  }
+
+  bool _isSamePreviewLayoutSize(Size? first, Size? second) {
+    if (first == null || second == null) {
+      return first == second;
+    }
+
+    return (first.width - second.width).abs() < 0.5 &&
+        (first.height - second.height).abs() < 0.5;
   }
 
   void _dismissFloatingPreview() {
@@ -652,10 +669,14 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
     final previewWidth = constraints.maxWidth < 600
         ? math.min(116.0, math.max(94.0, constraints.maxWidth * 0.28))
         : math.min(154.0, math.max(128.0, constraints.maxWidth * 0.14));
-    final designWidth = math.min(
+    final fallbackDesignWidth = math.min(
       420.0,
       math.max(320.0, constraints.maxWidth - 32),
     );
+    final designWidth = _previewLayoutSize?.width ?? fallbackDesignWidth;
+    final designHeight =
+        _previewLayoutSize?.height ??
+        fallbackDesignWidth / kStoreImageOutputAspectRatio;
     final showPreview =
         _isFloatingPreviewVisible && !_isFloatingPreviewDismissed;
     final showHandle = _isFloatingPreviewVisible && _isFloatingPreviewDismissed;
@@ -720,9 +741,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
                                         clipBehavior: Clip.hardEdge,
                                         child: SizedBox(
                                           width: designWidth,
-                                          height:
-                                              designWidth /
-                                              kStoreImageOutputAspectRatio,
+                                          height: designHeight,
                                           child: _buildComposedPreview(),
                                         ),
                                       ),
