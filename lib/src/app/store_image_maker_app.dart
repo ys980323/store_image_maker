@@ -1,4 +1,8 @@
+// Keep the standard Flutter Material API for compatibility with older SDKs.
+// ignore: deprecated_member_use
 import 'package:flutter/material.dart';
+
+import '../../l10n/app_localizations.dart';
 
 import '../pages/store_image_maker_page.dart';
 
@@ -13,7 +17,9 @@ class StoreImageMakerApp extends StatelessWidget {
     );
 
     return MaterialApp(
-      title: 'ストアイメージ作成',
+      onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,

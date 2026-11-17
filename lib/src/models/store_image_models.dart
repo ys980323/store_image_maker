@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:math' as math;
 
+// Keep the standard Flutter Material API for compatibility with older SDKs.
+// ignore: deprecated_member_use
 import 'package:flutter/material.dart';
 
 enum BackgroundMode { solid, gradient }

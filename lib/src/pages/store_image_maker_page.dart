@@ -4,11 +4,16 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:file_picker/file_picker.dart';
+// Keep the standard Flutter Material API for compatibility with older SDKs.
+// ignore: deprecated_member_use
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:in_app_review/in_app_review.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import 'package:intl/intl.dart';
+import '../../l10n/app_localizations.dart';
 
 import '../image_exporter.dart';
 import '../models/store_image_models.dart';
@@ -26,9 +31,26 @@ class StoreImageMakerPage extends StatefulWidget {
 }
 
 class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
-  final TextEditingController _titleController = TextEditingController(
-    text: 'あなたのアプリを、もっと魅力的に',
-  );
+  final TextEditingController _titleController = TextEditingController();
+  late AppLocalizations _l10n;
+  bool _headlineInitialized = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _l10n = AppLocalizations.of(context)!;
+    if (!_headlineInitialized) {
+      _titleController.text = _l10n.sampleHeadline;
+      _headlineInitialized = true;
+    }
+  }
+
+  String _number(num value, int digits) =>
+      NumberFormat(digits == 0 ? '0' : '0.0', _l10n.localeName).format(value);
+
+  String _percent(num value) =>
+      NumberFormat.percentPattern(_l10n.localeName).format(value);
+
   final TextEditingController _subtitleController = TextEditingController();
   final GlobalKey _captureKey = GlobalKey();
   final GlobalKey _scrollViewportKey = GlobalKey();
@@ -149,7 +171,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
     await _presetRepository.add(preset);
     await _loadPresets();
     if (mounted) {
-      _showSnackBar('プリセット「$name」を保存しました');
+      _showSnackBar(_l10n.presetSaved(name));
     }
   }
 
@@ -158,7 +180,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
     await _presetRepository.deleteAt(index);
     await _loadPresets();
     if (mounted) {
-      _showSnackBar('プリセット「$name」を削除しました');
+      _showSnackBar(_l10n.presetDeleted(name));
     }
   }
 
@@ -168,21 +190,21 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: const Text('プリセット名'),
+          title: Text(_l10n.presetName),
           content: TextField(
             controller: controller,
             autofocus: true,
-            decoration: const InputDecoration(hintText: 'プリセット名を入力'),
+            decoration: InputDecoration(hintText: _l10n.presetNameHint),
             onSubmitted: (value) => Navigator.of(dialogContext).pop(value),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('キャンセル'),
+              child: Text(_l10n.cancel),
             ),
             FilledButton(
               onPressed: () => Navigator.of(dialogContext).pop(controller.text),
-              child: const Text('保存'),
+              child: Text(_l10n.save),
             ),
           ],
         );
@@ -209,7 +231,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
     }
     final screenshotSize = await _decodeImagePixelSize(bytes);
     if (screenshotSize == null) {
-      _showSnackBar('画像サイズを取得できませんでした。PNG/JPGのスクリーンショットを選択してください。');
+      _showSnackBar(_l10n.imageSizeError);
       return;
     }
     setState(() {
@@ -238,6 +260,8 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
           }
         });
 
+        // Preserve the existing asynchronous error propagation.
+        // ignore: unawaited_return_in_try_block
         return completer.future.timeout(
           const Duration(seconds: 2),
           onTimeout: () => null,
@@ -260,19 +284,19 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
 
       final bytes = result.files.single.bytes;
       if (bytes == null) {
-        _showSnackBar('画像データを読み込めませんでした。');
+        _showSnackBar(_l10n.imageReadError);
         return null;
       }
       return bytes;
     } catch (error) {
-      _showSnackBar('画像選択に失敗しました: $error');
+      _showSnackBar(_l10n.imagePickError(error.toString()));
       return null;
     }
   }
 
   Future<void> _generateAndSaveImage() async {
     if (_screenshotBytes == null) {
-      _showSnackBar('先にスクリーンショット画像を選択してください。');
+      _showSnackBar(_l10n.selectScreenshotFirst);
       return;
     }
 
@@ -286,7 +310,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
           _captureKey.currentContext?.findRenderObject()
               as RenderRepaintBoundary?;
       if (boundary == null) {
-        throw StateError('プレビュー領域を取得できませんでした。');
+        throw StateError(_l10n.previewAreaError);
       }
 
       final capturePixelRatio = kStoreImageOutputWidth / boundary.size.width;
@@ -294,7 +318,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
       final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
       image.dispose();
       if (byteData == null) {
-        throw StateError('PNGデータの生成に失敗しました。');
+        throw StateError(_l10n.pngDataError);
       }
 
       final bytes = await _normalizeOutputResolution(
@@ -305,19 +329,19 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
       }
 
       try {
-        final path = await savePngBytes(bytes);
+        final path = await savePngBytes(bytes, localizations: _l10n);
         if (!mounted) {
           return;
         }
-        _showSnackBar('画像を保存しました: $path');
+        _showSnackBar(_l10n.imageSaved(path));
         _requestReviewIfNeeded();
       } on UnsupportedError catch (_) {
-        _showSnackBar('PNGは生成しました。現在のプラットフォームは保存非対応です。');
+        _showSnackBar(_l10n.savingUnsupported);
       } catch (error) {
-        _showSnackBar('PNGは生成しましたが、保存に失敗しました: $error');
+        _showSnackBar(_l10n.imageSaveError(error.toString()));
       }
     } catch (error) {
-      _showSnackBar('画像生成に失敗しました: $error');
+      _showSnackBar(_l10n.imageGenerateError(error.toString()));
     } finally {
       if (mounted) {
         setState(() {
@@ -338,7 +362,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
     try {
       final data = await image.toByteData(format: ui.ImageByteFormat.png);
       if (data == null) {
-        throw StateError('出力解像度の正規化に失敗しました。');
+        throw StateError(_l10n.resolutionError);
       }
       return data.buffer.asUint8List();
     } finally {
@@ -353,7 +377,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
         _captureKey.currentContext?.findRenderObject()
             as RenderRepaintBoundary?;
     if (boundary == null) {
-      throw StateError('プレビュー領域を取得できませんでした。');
+      throw StateError(_l10n.previewAreaError);
     }
 
     final capturePixelRatio = kStoreImageOutputWidth / boundary.size.width;
@@ -361,7 +385,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
     final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
     image.dispose();
     if (byteData == null) {
-      throw StateError('PNGデータの生成に失敗しました。');
+      throw StateError(_l10n.pngDataError);
     }
 
     return _normalizeOutputResolution(byteData.buffer.asUint8List());
@@ -484,7 +508,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
     };
     final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
     if (!launched) {
-      _showSnackBar('ページを開けませんでした。');
+      _showSnackBar(_l10n.pageOpenError);
     }
   }
 
@@ -496,7 +520,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
       mode: LaunchMode.externalApplication,
     );
     if (!launched) {
-      _showSnackBar('ページを開けませんでした。');
+      _showSnackBar(_l10n.pageOpenError);
     }
   }
 
@@ -536,23 +560,23 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('ストアイメージ作成'),
+        title: Text(_l10n.appTitle),
         actions: [
           PopupMenuButton<_AppMenuAction>(
             icon: const Icon(Icons.menu),
             onSelected: _onMenuAction,
-            itemBuilder: (context) => const [
+            itemBuilder: (context) => [
               PopupMenuItem(
                 value: _AppMenuAction.privacyPolicy,
-                child: Text('プライバシーポリシー'),
+                child: Text(_l10n.privacyPolicy),
               ),
               PopupMenuItem(
                 value: _AppMenuAction.termsOfService,
-                child: Text('利用規約'),
+                child: Text(_l10n.termsOfService),
               ),
               PopupMenuItem(
                 value: _AppMenuAction.review,
-                child: Text('アプリを評価する'),
+                child: Text(_l10n.rateApp),
               ),
             ],
           ),
@@ -632,8 +656,8 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
   Widget _buildPreviewPanel() {
     return _buildPanel(
       icon: Icons.auto_awesome_rounded,
-      title: 'ライブプレビュー',
-      subtitle: '設定変更はリアルタイム反映されます',
+      title: _l10n.livePreview,
+      subtitle: _l10n.livePreviewDescription,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -710,7 +734,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
                         }
                       },
                       child: Tooltip(
-                        message: 'プレビューを拡大',
+                        message: _l10n.expandPreview,
                         child: Material(
                           elevation: 14,
                           shadowColor: Colors.black.withValues(alpha: 0.24),
@@ -811,7 +835,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
                       }
                     },
                     child: Tooltip(
-                      message: 'プレビューを戻す',
+                      message: _l10n.restorePreview,
                       child: Material(
                         elevation: 10,
                         shadowColor: Colors.black.withValues(alpha: 0.2),
@@ -877,15 +901,15 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
   Widget _buildPresetCard() {
     return _buildPanel(
       icon: Icons.bookmarks_rounded,
-      title: 'プリセット',
-      subtitle: '設定を保存・読み込みできます',
+      title: _l10n.presets,
+      subtitle: _l10n.presetsDescription,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           FilledButton.tonalIcon(
             onPressed: _savePreset,
             icon: const Icon(Icons.save_rounded),
-            label: const Text('現在の設定をプリセットとして保存'),
+            label: Text(_l10n.savePreset),
             style: FilledButton.styleFrom(
               minimumSize: const Size(double.infinity, 46),
               shape: RoundedRectangleBorder(
@@ -895,8 +919,8 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
           ),
           if (_presets.isNotEmpty) ...[
             const SizedBox(height: 12),
-            const Text(
-              '保存済みプリセット',
+            Text(
+              _l10n.savedPresets,
               style: TextStyle(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
@@ -944,12 +968,12 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
                     ),
                     trailing: IconButton(
                       icon: const Icon(Icons.delete_outline, size: 20),
-                      tooltip: '削除',
+                      tooltip: _l10n.delete,
                       onPressed: () => _deletePreset(index),
                     ),
                     onTap: () {
                       _applyPreset(preset);
-                      _showSnackBar('プリセット「${preset.name}」を適用しました');
+                      _showSnackBar(_l10n.presetApplied(preset.name));
                     },
                   ),
                 ),
@@ -964,8 +988,8 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
   Widget _buildExportCard() {
     return _buildPanel(
       icon: Icons.download_rounded,
-      title: '書き出し',
-      subtitle: 'PNGを生成し、端末へ保存します',
+      title: _l10n.export,
+      subtitle: _l10n.exportDescription,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -977,13 +1001,16 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
               ).colorScheme.secondaryContainer.withValues(alpha: 0.55),
             ),
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            child: const Row(
+            child: Row(
               children: [
                 Icon(Icons.check_circle_outline, size: 18),
                 SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    '出力解像度は 1242 x 2688 px に固定されています',
+                    _l10n.outputResolution(
+                      _number(kStoreImageOutputWidth, 0),
+                      _number(kStoreImageOutputHeight, 0),
+                    ),
                     style: TextStyle(fontWeight: FontWeight.w600),
                   ),
                 ),
@@ -1006,7 +1033,9 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
                     child: CircularProgressIndicator(strokeWidth: 2),
                   )
                 : const Icon(Icons.download),
-            label: Text(_isExporting ? '生成中...' : 'PNGを生成して保存'),
+            label: Text(
+              _isExporting ? _l10n.generating : _l10n.generateAndSave,
+            ),
           ),
         ],
       ),
@@ -1155,7 +1184,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
         children: [
           Text(
             _titleController.text.trim().isEmpty
-                ? 'キャッチコピーを入力してください'
+                ? _l10n.headlineHint
                 : _titleController.text,
             textAlign: _titleTextAlign,
             maxLines: 3,
@@ -1378,7 +1407,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  'スクリーンショットを選択',
+                  _l10n.selectScreenshotPrompt,
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: colorScheme.onSurfaceVariant,
@@ -1451,15 +1480,17 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
 
     return _buildPanel(
       icon: Icons.image_search_rounded,
-      title: '素材画像',
-      subtitle: 'アプリのスクリーンショットを取り込みます',
+      title: _l10n.sourceImage,
+      subtitle: _l10n.sourceImageDescription,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           FilledButton.tonalIcon(
             onPressed: _pickScreenshot,
             icon: const Icon(Icons.phone_iphone),
-            label: Text(hasScreenshot ? 'スクリーンショット変更' : 'スクリーンショット選択'),
+            label: Text(
+              hasScreenshot ? _l10n.changeScreenshot : _l10n.selectScreenshot,
+            ),
             style: FilledButton.styleFrom(
               minimumSize: const Size(double.infinity, 46),
               shape: RoundedRectangleBorder(
@@ -1471,11 +1502,11 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
           SwitchListTile.adaptive(
             contentPadding: EdgeInsets.zero,
             dense: true,
-            title: const Text(
-              '仮想ノッチ',
+            title: Text(
+              _l10n.virtualNotch,
               style: TextStyle(fontWeight: FontWeight.w600),
             ),
-            subtitle: const Text('スクショ上に仮想ノッチを重ねて表示'),
+            subtitle: Text(_l10n.virtualNotchDescription),
             value: _showDynamicIsland,
             onChanged: (value) {
               setState(() {
@@ -1484,13 +1515,13 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
             },
           ),
           const SizedBox(height: 4),
-          Text('仮想ノッチサイズ: ${(_dynamicIslandScale * 100).round()}%'),
+          Text(_l10n.notchSize(_percent(_dynamicIslandScale))),
           Slider(
             value: _dynamicIslandScale,
             min: 0.7,
             max: 1.4,
             divisions: 28,
-            label: '${(_dynamicIslandScale * 100).round()}%',
+            label: _percent(_dynamicIslandScale),
             onChanged: _showDynamicIsland
                 ? (value) {
                     setState(() {
@@ -1500,13 +1531,13 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
                 : null,
           ),
           const SizedBox(height: 4),
-          Text('端末画像サイズ: $scalePercent%'),
+          Text(_l10n.deviceSize(_percent(scalePercent / 100))),
           Slider(
             value: _phoneScale,
             min: 0.45,
             max: 0.9,
             divisions: 45,
-            label: '$scalePercent%',
+            label: _percent(scalePercent / 100),
             onChanged: (value) {
               setState(() {
                 _phoneScale = value;
@@ -1521,21 +1552,21 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
   Widget _buildBackgroundCard() {
     return _buildPanel(
       icon: Icons.palette_outlined,
-      title: '背景',
-      subtitle: 'ストアイメージの背景をカスタマイズします',
+      title: _l10n.background,
+      subtitle: _l10n.backgroundDescription,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SegmentedButton<BackgroundMode>(
-            segments: const [
+            segments: [
               ButtonSegment(
                 value: BackgroundMode.solid,
-                label: Text('単色'),
+                label: Text(_l10n.solid),
                 icon: Icon(Icons.crop_square),
               ),
               ButtonSegment(
                 value: BackgroundMode.gradient,
-                label: Text('グラデーション'),
+                label: Text(_l10n.gradient),
                 icon: Icon(Icons.gradient),
               ),
             ],
@@ -1548,7 +1579,10 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
           ),
           const SizedBox(height: 12),
           if (_backgroundMode == BackgroundMode.solid) ...[
-            const Text('背景色', style: TextStyle(fontWeight: FontWeight.w600)),
+            Text(
+              _l10n.backgroundColor,
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
             const SizedBox(height: 6),
             _buildPalette(
               selectedColor: _solidColor,
@@ -1559,7 +1593,10 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
               },
             ),
           ] else if (_backgroundMode == BackgroundMode.gradient) ...[
-            const Text('開始色', style: TextStyle(fontWeight: FontWeight.w600)),
+            Text(
+              _l10n.startColor,
+              style: TextStyle(fontWeight: FontWeight.w600),
+            ),
             const SizedBox(height: 6),
             _buildPalette(
               selectedColor: _gradientStartColor,
@@ -1570,7 +1607,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
               },
             ),
             const SizedBox(height: 10),
-            const Text('終了色', style: TextStyle(fontWeight: FontWeight.w600)),
+            Text(_l10n.endColor, style: TextStyle(fontWeight: FontWeight.w600)),
             const SizedBox(height: 6),
             _buildPalette(
               selectedColor: _gradientEndColor,
@@ -1591,18 +1628,18 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
   Widget _buildTitleCard() {
     return _buildPanel(
       icon: Icons.text_fields_rounded,
-      title: '文字',
-      subtitle: 'キャッチコピーの見た目を調整します',
+      title: _l10n.text,
+      subtitle: _l10n.textDescription,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('タイトル', style: TextStyle(fontWeight: FontWeight.w600)),
+          Text(_l10n.title, style: TextStyle(fontWeight: FontWeight.w600)),
           const SizedBox(height: 6),
           TextField(
             controller: _titleController,
             maxLines: 3,
             textInputAction: TextInputAction.newline,
-            decoration: const InputDecoration(hintText: 'タイトルを入力'),
+            decoration: InputDecoration(hintText: _l10n.titleHint),
             onTapOutside: (_) {
               FocusManager.instance.primaryFocus?.unfocus();
             },
@@ -1611,7 +1648,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
             },
           ),
           const SizedBox(height: 12),
-          const Text('文字色', style: TextStyle(fontWeight: FontWeight.w600)),
+          Text(_l10n.textColor, style: TextStyle(fontWeight: FontWeight.w600)),
           const SizedBox(height: 6),
           _buildPalette(
             selectedColor: _titleColor,
@@ -1622,39 +1659,39 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
             },
           ),
           const SizedBox(height: 12),
-          Text('フォントサイズ: ${_titleFontSize.toStringAsFixed(0)}'),
+          Text(_l10n.fontSize(_number(_titleFontSize, 0))),
           Slider(
             value: _titleFontSize,
             min: 20,
             max: 64,
             divisions: 44,
-            label: _titleFontSize.toStringAsFixed(0),
+            label: _number(_titleFontSize, 0),
             onChanged: (value) {
               setState(() {
                 _titleFontSize = value;
               });
             },
           ),
-          Text('行間: ${_titleLineHeight.toStringAsFixed(1)}'),
+          Text(_l10n.lineHeight(_number(_titleLineHeight, 1))),
           Slider(
             value: _titleLineHeight,
             min: 0.8,
             max: 3.0,
             divisions: 22,
-            label: _titleLineHeight.toStringAsFixed(1),
+            label: _number(_titleLineHeight, 1),
             onChanged: (value) {
               setState(() {
                 _titleLineHeight = value;
               });
             },
           ),
-          Text('文字間隔: ${_titleLetterSpacing.toStringAsFixed(1)}'),
+          Text(_l10n.letterSpacing(_number(_titleLetterSpacing, 1))),
           Slider(
             value: _titleLetterSpacing,
             min: -2,
             max: 20,
             divisions: 22,
-            label: _titleLetterSpacing.toStringAsFixed(1),
+            label: _number(_titleLetterSpacing, 1),
             onChanged: (value) {
               setState(() {
                 _titleLetterSpacing = value;
@@ -1662,13 +1699,13 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
             },
           ),
           const Divider(height: 24),
-          const Text('サブテキスト', style: TextStyle(fontWeight: FontWeight.w600)),
+          Text(_l10n.subtitle, style: TextStyle(fontWeight: FontWeight.w600)),
           const SizedBox(height: 6),
           TextField(
             controller: _subtitleController,
             maxLines: 3,
             textInputAction: TextInputAction.newline,
-            decoration: const InputDecoration(hintText: 'サブテキストを入力（任意）'),
+            decoration: InputDecoration(hintText: _l10n.subtitleHint),
             onTapOutside: (_) {
               FocusManager.instance.primaryFocus?.unfocus();
             },
@@ -1677,8 +1714,8 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
             },
           ),
           const SizedBox(height: 12),
-          const Text(
-            'サブテキスト文字色',
+          Text(
+            _l10n.subtitleColor,
             style: TextStyle(fontWeight: FontWeight.w600),
           ),
           const SizedBox(height: 6),
@@ -1691,39 +1728,39 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
             },
           ),
           const SizedBox(height: 12),
-          Text('フォントサイズ: ${_subtitleFontSize.toStringAsFixed(0)}'),
+          Text(_l10n.fontSize(_number(_subtitleFontSize, 0))),
           Slider(
             value: _subtitleFontSize,
             min: 12,
             max: 48,
             divisions: 36,
-            label: _subtitleFontSize.toStringAsFixed(0),
+            label: _number(_subtitleFontSize, 0),
             onChanged: (value) {
               setState(() {
                 _subtitleFontSize = value;
               });
             },
           ),
-          Text('行間: ${_subtitleLineHeight.toStringAsFixed(1)}'),
+          Text(_l10n.lineHeight(_number(_subtitleLineHeight, 1))),
           Slider(
             value: _subtitleLineHeight,
             min: 0.8,
             max: 3.0,
             divisions: 22,
-            label: _subtitleLineHeight.toStringAsFixed(1),
+            label: _number(_subtitleLineHeight, 1),
             onChanged: (value) {
               setState(() {
                 _subtitleLineHeight = value;
               });
             },
           ),
-          Text('文字間隔: ${_subtitleLetterSpacing.toStringAsFixed(1)}'),
+          Text(_l10n.letterSpacing(_number(_subtitleLetterSpacing, 1))),
           Slider(
             value: _subtitleLetterSpacing,
             min: -2,
             max: 20,
             divisions: 22,
-            label: _subtitleLetterSpacing.toStringAsFixed(1),
+            label: _number(_subtitleLetterSpacing, 1),
             onChanged: (value) {
               setState(() {
                 _subtitleLetterSpacing = value;
@@ -1732,15 +1769,15 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
           ),
           const Divider(height: 24),
           SegmentedButton<TitlePosition>(
-            segments: const [
+            segments: [
               ButtonSegment(
                 value: TitlePosition.top,
-                label: Text('上部'),
+                label: Text(_l10n.top),
                 icon: Icon(Icons.vertical_align_top),
               ),
               ButtonSegment(
                 value: TitlePosition.bottom,
-                label: Text('下部'),
+                label: Text(_l10n.bottom),
                 icon: Icon(Icons.vertical_align_bottom),
               ),
             ],
@@ -1753,20 +1790,20 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
           ),
           const SizedBox(height: 10),
           SegmentedButton<TitleAlignment>(
-            segments: const [
+            segments: [
               ButtonSegment(
                 value: TitleAlignment.left,
-                label: Text('左寄せ'),
+                label: Text(_l10n.alignLeft),
                 icon: Icon(Icons.format_align_left),
               ),
               ButtonSegment(
                 value: TitleAlignment.center,
-                label: Text('中央'),
+                label: Text(_l10n.alignCenter),
                 icon: Icon(Icons.format_align_center),
               ),
               ButtonSegment(
                 value: TitleAlignment.right,
-                label: Text('右寄せ'),
+                label: Text(_l10n.alignRight),
                 icon: Icon(Icons.format_align_right),
               ),
             ],
@@ -1792,7 +1829,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
       ),
       icon: const Icon(Icons.preview_rounded),
-      label: const Text('プレビュー表示'),
+      label: Text(_l10n.showPreview),
     );
   }
 
@@ -1822,9 +1859,9 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
               children: [
                 Row(
                   children: [
-                    const Expanded(
+                    Expanded(
                       child: Text(
-                        'プレビュー',
+                        _l10n.preview,
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
@@ -1834,7 +1871,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
                     IconButton(
                       onPressed: () => Navigator.of(dialogContext).pop(),
                       icon: const Icon(Icons.close),
-                      tooltip: '閉じる',
+                      tooltip: _l10n.close,
                     ),
                   ],
                 ),
@@ -1851,7 +1888,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
                       if (snapshot.hasError || !snapshot.hasData) {
                         return Center(
                           child: Text(
-                            'プレビューの生成に失敗しました',
+                            _l10n.previewError,
                             style: TextStyle(
                               color: Theme.of(context).colorScheme.error,
                               fontWeight: FontWeight.w600,
@@ -1920,7 +1957,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
                   ),
                 ),
                 const SizedBox(width: 6),
-                Text(item.name),
+                Text(_paletteName(item.name)),
               ],
             ),
             labelStyle: const TextStyle(fontWeight: FontWeight.w600),
@@ -1948,7 +1985,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
                 ),
               ),
               const SizedBox(width: 6),
-              const Text('カスタム'),
+              Text(_l10n.custom),
             ],
           ),
           labelStyle: const TextStyle(fontWeight: FontWeight.w600),
@@ -1983,7 +2020,7 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
             final previewColor = currentColor();
 
             return AlertDialog(
-              title: const Text('カスタムカラー'),
+              title: Text(_l10n.customColor),
               content: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -2048,13 +2085,13 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
                   onPressed: () {
                     Navigator.of(dialogContext).pop();
                   },
-                  child: const Text('キャンセル'),
+                  child: Text(_l10n.cancel),
                 ),
                 FilledButton(
                   onPressed: () {
                     Navigator.of(dialogContext).pop(currentColor());
                   },
-                  child: const Text('適用'),
+                  child: Text(_l10n.apply),
                 ),
               ],
             );
@@ -2095,14 +2132,14 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
             max: 255,
             divisions: 255,
             activeColor: activeColor,
-            label: value.round().toString(),
+            label: _number(value.round(), 0),
             onChanged: onChanged,
           ),
         ),
         SizedBox(
           width: 30,
           child: Text(
-            value.round().toString(),
+            _number(value.round(), 0),
             textAlign: TextAlign.right,
             style: const TextStyle(
               fontFeatures: [ui.FontFeature.tabularFigures()],
@@ -2112,6 +2149,20 @@ class _StoreImageMakerPageState extends State<StoreImageMakerPage> {
       ],
     );
   }
+
+  String _paletteName(String name) => switch (name) {
+    'White' => _l10n.colorWhite,
+    'Black' => _l10n.colorBlack,
+    'Sky' => _l10n.colorSky,
+    'Navy' => _l10n.colorNavy,
+    'Teal' => _l10n.colorTeal,
+    'Green' => _l10n.colorGreen,
+    'Amber' => _l10n.colorAmber,
+    'Rose' => _l10n.colorRose,
+    'Purple' => _l10n.colorPurple,
+    'Orange' => _l10n.colorOrange,
+    _ => name,
+  };
 
   String _toHexRgb(Color color) {
     final hex = color.toARGB32().toRadixString(16).padLeft(8, '0');

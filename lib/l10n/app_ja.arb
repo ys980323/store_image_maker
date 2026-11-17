@@ -1,0 +1,195 @@
+{
+  "@@locale": "ja",
+  "appTitle": "ストアイメージ作成",
+  "sampleHeadline": "あなたのアプリを、もっと魅力的に",
+  "presetName": "プリセット名",
+  "presetNameHint": "プリセット名を入力",
+  "cancel": "キャンセル",
+  "save": "保存",
+  "imageSizeError": "画像サイズを取得できませんでした。PNG/JPGのスクリーンショットを選択してください。",
+  "imageReadError": "画像データを読み込めませんでした。",
+  "selectScreenshotFirst": "先にスクリーンショット画像を選択してください。",
+  "previewAreaError": "プレビュー領域を取得できませんでした。",
+  "pngDataError": "PNGデータの生成に失敗しました。",
+  "savingUnsupported": "PNGは生成しました。現在のプラットフォームは保存非対応です。",
+  "resolutionError": "出力解像度の正規化に失敗しました。",
+  "pageOpenError": "ページを開けませんでした。",
+  "privacyPolicy": "プライバシーポリシー",
+  "termsOfService": "利用規約",
+  "rateApp": "アプリを評価する",
+  "livePreview": "ライブプレビュー",
+  "livePreviewDescription": "設定変更はリアルタイム反映されます",
+  "expandPreview": "プレビューを拡大",
+  "restorePreview": "プレビューを戻す",
+  "presets": "プリセット",
+  "presetsDescription": "設定を保存・読み込みできます",
+  "savePreset": "現在の設定をプリセットとして保存",
+  "savedPresets": "保存済みプリセット",
+  "delete": "削除",
+  "export": "書き出し",
+  "exportDescription": "PNGを生成し、端末へ保存します",
+  "outputResolution": "出力解像度は {width} x {height} px に固定されています",
+  "generating": "生成中...",
+  "generateAndSave": "PNGを生成して保存",
+  "headlineHint": "キャッチコピーを入力してください",
+  "selectScreenshotPrompt": "スクリーンショットを選択",
+  "sourceImage": "素材画像",
+  "sourceImageDescription": "アプリのスクリーンショットを取り込みます",
+  "changeScreenshot": "スクリーンショット変更",
+  "selectScreenshot": "スクリーンショット選択",
+  "virtualNotch": "仮想ノッチ",
+  "virtualNotchDescription": "スクショ上に仮想ノッチを重ねて表示",
+  "background": "背景",
+  "backgroundDescription": "ストアイメージの背景をカスタマイズします",
+  "solid": "単色",
+  "gradient": "グラデーション",
+  "backgroundColor": "背景色",
+  "startColor": "開始色",
+  "endColor": "終了色",
+  "text": "文字",
+  "textDescription": "キャッチコピーの見た目を調整します",
+  "title": "タイトル",
+  "titleHint": "タイトルを入力",
+  "textColor": "文字色",
+  "subtitle": "サブテキスト",
+  "subtitleHint": "サブテキストを入力（任意）",
+  "subtitleColor": "サブテキスト文字色",
+  "top": "上部",
+  "bottom": "下部",
+  "alignLeft": "左寄せ",
+  "alignCenter": "中央",
+  "alignRight": "右寄せ",
+  "showPreview": "プレビュー表示",
+  "preview": "プレビュー",
+  "close": "閉じる",
+  "previewError": "プレビューの生成に失敗しました",
+  "custom": "カスタム",
+  "customColor": "カスタムカラー",
+  "apply": "適用",
+  "photosSaveError": "写真アプリへの保存に失敗しました。",
+  "platformSaveUnsupported": "このプラットフォームではファイル保存に対応していません。",
+  "presetSaved": "プリセット「{name}」を保存しました",
+  "@presetSaved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "presetDeleted": "プリセット「{name}」を削除しました",
+  "@presetDeleted": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "presetApplied": "プリセット「{name}」を適用しました",
+  "@presetApplied": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "imagePickError": "画像選択に失敗しました: {error}",
+  "@imagePickError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "imageSaved": "画像を保存しました: {path}",
+  "@imageSaved": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "imageSaveError": "PNGは生成しましたが、保存に失敗しました: {error}",
+  "@imageSaveError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "imageGenerateError": "画像生成に失敗しました: {error}",
+  "@imageGenerateError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "notchSize": "仮想ノッチサイズ: {value}",
+  "@notchSize": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "deviceSize": "端末画像サイズ: {value}",
+  "@deviceSize": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "fontSize": "フォントサイズ: {value}",
+  "@fontSize": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "lineHeight": "行間: {value}",
+  "@lineHeight": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "letterSpacing": "文字間隔: {value}",
+  "@letterSpacing": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "photosLocation": "iPhoneの写真アプリ (assetId: {assetId})",
+  "@photosLocation": {
+    "placeholders": {
+      "assetId": {
+        "type": "String"
+      }
+    }
+  },
+  "colorWhite": "White",
+  "colorBlack": "Black",
+  "colorSky": "Sky",
+  "colorNavy": "Navy",
+  "colorTeal": "Teal",
+  "colorGreen": "Green",
+  "colorAmber": "Amber",
+  "colorRose": "Rose",
+  "colorPurple": "Purple",
+  "colorOrange": "Orange",
+  "@outputResolution": {
+    "placeholders": {
+      "width": {
+        "type": "String"
+      },
+      "height": {
+        "type": "String"
+      }
+    }
+  }
+}
