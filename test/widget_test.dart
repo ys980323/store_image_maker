@@ -7,7 +7,7 @@ import 'package:store_image_maker/main.dart';
 
 void main() {
   for (final language in ['ja', 'en', 'fr']) {
-    testWidgets('editor uses $language locale with Japanese fallback', (
+    testWidgets('editor uses $language locale with English fallback', (
       WidgetTester tester,
     ) async {
       SharedPreferences.setMockInitialValues({});
@@ -16,7 +16,7 @@ void main() {
       await tester.pumpWidget(const StoreImageMakerApp());
       await tester.pumpAndSettle();
 
-      final english = language == 'en';
+      final english = language != 'ja';
       expect(
         find.text(english ? 'Store Image Maker' : 'ストアイメージ作成'),
         findsAtLeastNWidgets(1),

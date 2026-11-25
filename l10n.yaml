@@ -1,7 +1,7 @@
 arb-dir: lib/l10n
-template-arb-file: app_ja.arb
+template-arb-file: app_en.arb
 output-localization-file: app_localizations.dart
-preferred-supported-locales: [ja, en]
+preferred-supported-locales: [en, ja]
 header: |
   // Generated with Flutter's standard localization delegates for SDK compatibility.
   // ignore_for_file: deprecated_member_use

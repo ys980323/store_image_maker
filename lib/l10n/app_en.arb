@@ -29,6 +29,16 @@
   "export": "Export",
   "exportDescription": "Generate a PNG and save it to your device",
   "outputResolution": "Output resolution is fixed at {width} x {height} px",
+  "@outputResolution": {
+    "placeholders": {
+      "width": {
+        "type": "String"
+      },
+      "height": {
+        "type": "String"
+      }
+    }
+  },
   "generating": "Generating...",
   "generateAndSave": "Generate and save PNG",
   "headlineHint": "Enter your headline",
@@ -69,18 +79,109 @@
   "photosSaveError": "Could not save the image to Photos.",
   "platformSaveUnsupported": "Saving files is not supported on this platform.",
   "presetSaved": "Saved preset “{name}”.",
+  "@presetSaved": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "presetDeleted": "Deleted preset “{name}”.",
+  "@presetDeleted": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "presetApplied": "Applied preset “{name}”.",
+  "@presetApplied": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "imagePickError": "Could not select the image: {error}",
+  "@imagePickError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "imageSaved": "Image saved: {path}",
+  "@imageSaved": {
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
   "imageSaveError": "The PNG was generated, but could not be saved: {error}",
+  "@imageSaveError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "imageGenerateError": "Could not generate the image: {error}",
+  "@imageGenerateError": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
   "notchSize": "Virtual notch size: {value}",
+  "@notchSize": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
   "deviceSize": "Device image size: {value}",
+  "@deviceSize": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
   "fontSize": "Font size: {value}",
+  "@fontSize": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
   "lineHeight": "Line height: {value}",
+  "@lineHeight": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
   "letterSpacing": "Letter spacing: {value}",
+  "@letterSpacing": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
   "photosLocation": "Photos on iPhone (assetId: {assetId})",
+  "@photosLocation": {
+    "placeholders": {
+      "assetId": {
+        "type": "String"
+      }
+    }
+  },
   "colorWhite": "White",
   "colorBlack": "Black",
   "colorSky": "Sky",

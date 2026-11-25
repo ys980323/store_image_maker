@@ -20,6 +20,15 @@ class StoreImageMakerApp extends StatelessWidget {
       onGenerateTitle: (context) => AppLocalizations.of(context)!.appTitle,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
+      localeResolutionCallback: (locale, supportedLocales) {
+        if (locale != null &&
+            supportedLocales.any(
+              (supported) => supported.languageCode == locale.languageCode,
+            )) {
+          return locale;
+        }
+        return const Locale('en');
+      },
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,

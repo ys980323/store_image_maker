@@ -97,553 +97,553 @@ abstract class AppLocalizations {
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
-    Locale('ja'),
     Locale('en'),
+    Locale('ja'),
   ];
 
   /// No description provided for @appTitle.
   ///
-  /// In ja, this message translates to:
-  /// **'ストアイメージ作成'**
+  /// In en, this message translates to:
+  /// **'Store Image Maker'**
   String get appTitle;
 
   /// No description provided for @sampleHeadline.
   ///
-  /// In ja, this message translates to:
-  /// **'あなたのアプリを、もっと魅力的に'**
+  /// In en, this message translates to:
+  /// **'Make your app shine'**
   String get sampleHeadline;
 
   /// No description provided for @presetName.
   ///
-  /// In ja, this message translates to:
-  /// **'プリセット名'**
+  /// In en, this message translates to:
+  /// **'Preset name'**
   String get presetName;
 
   /// No description provided for @presetNameHint.
   ///
-  /// In ja, this message translates to:
-  /// **'プリセット名を入力'**
+  /// In en, this message translates to:
+  /// **'Enter a preset name'**
   String get presetNameHint;
 
   /// No description provided for @cancel.
   ///
-  /// In ja, this message translates to:
-  /// **'キャンセル'**
+  /// In en, this message translates to:
+  /// **'Cancel'**
   String get cancel;
 
   /// No description provided for @save.
   ///
-  /// In ja, this message translates to:
-  /// **'保存'**
+  /// In en, this message translates to:
+  /// **'Save'**
   String get save;
 
   /// No description provided for @imageSizeError.
   ///
-  /// In ja, this message translates to:
-  /// **'画像サイズを取得できませんでした。PNG/JPGのスクリーンショットを選択してください。'**
+  /// In en, this message translates to:
+  /// **'Could not read the image size. Please choose a PNG or JPG screenshot.'**
   String get imageSizeError;
 
   /// No description provided for @imageReadError.
   ///
-  /// In ja, this message translates to:
-  /// **'画像データを読み込めませんでした。'**
+  /// In en, this message translates to:
+  /// **'Could not read the image data.'**
   String get imageReadError;
 
   /// No description provided for @selectScreenshotFirst.
   ///
-  /// In ja, this message translates to:
-  /// **'先にスクリーンショット画像を選択してください。'**
+  /// In en, this message translates to:
+  /// **'Please select a screenshot first.'**
   String get selectScreenshotFirst;
 
   /// No description provided for @previewAreaError.
   ///
-  /// In ja, this message translates to:
-  /// **'プレビュー領域を取得できませんでした。'**
+  /// In en, this message translates to:
+  /// **'Could not access the preview area.'**
   String get previewAreaError;
 
   /// No description provided for @pngDataError.
   ///
-  /// In ja, this message translates to:
-  /// **'PNGデータの生成に失敗しました。'**
+  /// In en, this message translates to:
+  /// **'Could not generate the PNG data.'**
   String get pngDataError;
 
   /// No description provided for @savingUnsupported.
   ///
-  /// In ja, this message translates to:
-  /// **'PNGは生成しました。現在のプラットフォームは保存非対応です。'**
+  /// In en, this message translates to:
+  /// **'The PNG was generated, but saving is not supported on this platform.'**
   String get savingUnsupported;
 
   /// No description provided for @resolutionError.
   ///
-  /// In ja, this message translates to:
-  /// **'出力解像度の正規化に失敗しました。'**
+  /// In en, this message translates to:
+  /// **'Could not resize the image to the output resolution.'**
   String get resolutionError;
 
   /// No description provided for @pageOpenError.
   ///
-  /// In ja, this message translates to:
-  /// **'ページを開けませんでした。'**
+  /// In en, this message translates to:
+  /// **'Could not open the page.'**
   String get pageOpenError;
 
   /// No description provided for @privacyPolicy.
   ///
-  /// In ja, this message translates to:
-  /// **'プライバシーポリシー'**
+  /// In en, this message translates to:
+  /// **'Privacy Policy'**
   String get privacyPolicy;
 
   /// No description provided for @termsOfService.
   ///
-  /// In ja, this message translates to:
-  /// **'利用規約'**
+  /// In en, this message translates to:
+  /// **'Terms of Service'**
   String get termsOfService;
 
   /// No description provided for @rateApp.
   ///
-  /// In ja, this message translates to:
-  /// **'アプリを評価する'**
+  /// In en, this message translates to:
+  /// **'Rate this app'**
   String get rateApp;
 
   /// No description provided for @livePreview.
   ///
-  /// In ja, this message translates to:
-  /// **'ライブプレビュー'**
+  /// In en, this message translates to:
+  /// **'Live preview'**
   String get livePreview;
 
   /// No description provided for @livePreviewDescription.
   ///
-  /// In ja, this message translates to:
-  /// **'設定変更はリアルタイム反映されます'**
+  /// In en, this message translates to:
+  /// **'Changes appear in real time'**
   String get livePreviewDescription;
 
   /// No description provided for @expandPreview.
   ///
-  /// In ja, this message translates to:
-  /// **'プレビューを拡大'**
+  /// In en, this message translates to:
+  /// **'Expand preview'**
   String get expandPreview;
 
   /// No description provided for @restorePreview.
   ///
-  /// In ja, this message translates to:
-  /// **'プレビューを戻す'**
+  /// In en, this message translates to:
+  /// **'Restore preview'**
   String get restorePreview;
 
   /// No description provided for @presets.
   ///
-  /// In ja, this message translates to:
-  /// **'プリセット'**
+  /// In en, this message translates to:
+  /// **'Presets'**
   String get presets;
 
   /// No description provided for @presetsDescription.
   ///
-  /// In ja, this message translates to:
-  /// **'設定を保存・読み込みできます'**
+  /// In en, this message translates to:
+  /// **'Save and load your settings'**
   String get presetsDescription;
 
   /// No description provided for @savePreset.
   ///
-  /// In ja, this message translates to:
-  /// **'現在の設定をプリセットとして保存'**
+  /// In en, this message translates to:
+  /// **'Save current settings as a preset'**
   String get savePreset;
 
   /// No description provided for @savedPresets.
   ///
-  /// In ja, this message translates to:
-  /// **'保存済みプリセット'**
+  /// In en, this message translates to:
+  /// **'Saved presets'**
   String get savedPresets;
 
   /// No description provided for @delete.
   ///
-  /// In ja, this message translates to:
-  /// **'削除'**
+  /// In en, this message translates to:
+  /// **'Delete'**
   String get delete;
 
   /// No description provided for @export.
   ///
-  /// In ja, this message translates to:
-  /// **'書き出し'**
+  /// In en, this message translates to:
+  /// **'Export'**
   String get export;
 
   /// No description provided for @exportDescription.
   ///
-  /// In ja, this message translates to:
-  /// **'PNGを生成し、端末へ保存します'**
+  /// In en, this message translates to:
+  /// **'Generate a PNG and save it to your device'**
   String get exportDescription;
 
   /// No description provided for @outputResolution.
   ///
-  /// In ja, this message translates to:
-  /// **'出力解像度は {width} x {height} px に固定されています'**
+  /// In en, this message translates to:
+  /// **'Output resolution is fixed at {width} x {height} px'**
   String outputResolution(String width, String height);
 
   /// No description provided for @generating.
   ///
-  /// In ja, this message translates to:
-  /// **'生成中...'**
+  /// In en, this message translates to:
+  /// **'Generating...'**
   String get generating;
 
   /// No description provided for @generateAndSave.
   ///
-  /// In ja, this message translates to:
-  /// **'PNGを生成して保存'**
+  /// In en, this message translates to:
+  /// **'Generate and save PNG'**
   String get generateAndSave;
 
   /// No description provided for @headlineHint.
   ///
-  /// In ja, this message translates to:
-  /// **'キャッチコピーを入力してください'**
+  /// In en, this message translates to:
+  /// **'Enter your headline'**
   String get headlineHint;
 
   /// No description provided for @selectScreenshotPrompt.
   ///
-  /// In ja, this message translates to:
-  /// **'スクリーンショットを選択'**
+  /// In en, this message translates to:
+  /// **'Select a screenshot'**
   String get selectScreenshotPrompt;
 
   /// No description provided for @sourceImage.
   ///
-  /// In ja, this message translates to:
-  /// **'素材画像'**
+  /// In en, this message translates to:
+  /// **'Source image'**
   String get sourceImage;
 
   /// No description provided for @sourceImageDescription.
   ///
-  /// In ja, this message translates to:
-  /// **'アプリのスクリーンショットを取り込みます'**
+  /// In en, this message translates to:
+  /// **'Import a screenshot of your app'**
   String get sourceImageDescription;
 
   /// No description provided for @changeScreenshot.
   ///
-  /// In ja, this message translates to:
-  /// **'スクリーンショット変更'**
+  /// In en, this message translates to:
+  /// **'Change screenshot'**
   String get changeScreenshot;
 
   /// No description provided for @selectScreenshot.
   ///
-  /// In ja, this message translates to:
-  /// **'スクリーンショット選択'**
+  /// In en, this message translates to:
+  /// **'Select screenshot'**
   String get selectScreenshot;
 
   /// No description provided for @virtualNotch.
   ///
-  /// In ja, this message translates to:
-  /// **'仮想ノッチ'**
+  /// In en, this message translates to:
+  /// **'Virtual notch'**
   String get virtualNotch;
 
   /// No description provided for @virtualNotchDescription.
   ///
-  /// In ja, this message translates to:
-  /// **'スクショ上に仮想ノッチを重ねて表示'**
+  /// In en, this message translates to:
+  /// **'Overlay a virtual notch on the screenshot'**
   String get virtualNotchDescription;
 
   /// No description provided for @background.
   ///
-  /// In ja, this message translates to:
-  /// **'背景'**
+  /// In en, this message translates to:
+  /// **'Background'**
   String get background;
 
   /// No description provided for @backgroundDescription.
   ///
-  /// In ja, this message translates to:
-  /// **'ストアイメージの背景をカスタマイズします'**
+  /// In en, this message translates to:
+  /// **'Customize your store image background'**
   String get backgroundDescription;
 
   /// No description provided for @solid.
   ///
-  /// In ja, this message translates to:
-  /// **'単色'**
+  /// In en, this message translates to:
+  /// **'Solid color'**
   String get solid;
 
   /// No description provided for @gradient.
   ///
-  /// In ja, this message translates to:
-  /// **'グラデーション'**
+  /// In en, this message translates to:
+  /// **'Gradient'**
   String get gradient;
 
   /// No description provided for @backgroundColor.
   ///
-  /// In ja, this message translates to:
-  /// **'背景色'**
+  /// In en, this message translates to:
+  /// **'Background color'**
   String get backgroundColor;
 
   /// No description provided for @startColor.
   ///
-  /// In ja, this message translates to:
-  /// **'開始色'**
+  /// In en, this message translates to:
+  /// **'Start color'**
   String get startColor;
 
   /// No description provided for @endColor.
   ///
-  /// In ja, this message translates to:
-  /// **'終了色'**
+  /// In en, this message translates to:
+  /// **'End color'**
   String get endColor;
 
   /// No description provided for @text.
   ///
-  /// In ja, this message translates to:
-  /// **'文字'**
+  /// In en, this message translates to:
+  /// **'Text'**
   String get text;
 
   /// No description provided for @textDescription.
   ///
-  /// In ja, this message translates to:
-  /// **'キャッチコピーの見た目を調整します'**
+  /// In en, this message translates to:
+  /// **'Adjust the appearance of your headline'**
   String get textDescription;
 
   /// No description provided for @title.
   ///
-  /// In ja, this message translates to:
-  /// **'タイトル'**
+  /// In en, this message translates to:
+  /// **'Title'**
   String get title;
 
   /// No description provided for @titleHint.
   ///
-  /// In ja, this message translates to:
-  /// **'タイトルを入力'**
+  /// In en, this message translates to:
+  /// **'Enter a title'**
   String get titleHint;
 
   /// No description provided for @textColor.
   ///
-  /// In ja, this message translates to:
-  /// **'文字色'**
+  /// In en, this message translates to:
+  /// **'Text color'**
   String get textColor;
 
   /// No description provided for @subtitle.
   ///
-  /// In ja, this message translates to:
-  /// **'サブテキスト'**
+  /// In en, this message translates to:
+  /// **'Subtitle'**
   String get subtitle;
 
   /// No description provided for @subtitleHint.
   ///
-  /// In ja, this message translates to:
-  /// **'サブテキストを入力（任意）'**
+  /// In en, this message translates to:
+  /// **'Enter a subtitle (optional)'**
   String get subtitleHint;
 
   /// No description provided for @subtitleColor.
   ///
-  /// In ja, this message translates to:
-  /// **'サブテキスト文字色'**
+  /// In en, this message translates to:
+  /// **'Subtitle color'**
   String get subtitleColor;
 
   /// No description provided for @top.
   ///
-  /// In ja, this message translates to:
-  /// **'上部'**
+  /// In en, this message translates to:
+  /// **'Top'**
   String get top;
 
   /// No description provided for @bottom.
   ///
-  /// In ja, this message translates to:
-  /// **'下部'**
+  /// In en, this message translates to:
+  /// **'Bottom'**
   String get bottom;
 
   /// No description provided for @alignLeft.
   ///
-  /// In ja, this message translates to:
-  /// **'左寄せ'**
+  /// In en, this message translates to:
+  /// **'Left'**
   String get alignLeft;
 
   /// No description provided for @alignCenter.
   ///
-  /// In ja, this message translates to:
-  /// **'中央'**
+  /// In en, this message translates to:
+  /// **'Center'**
   String get alignCenter;
 
   /// No description provided for @alignRight.
   ///
-  /// In ja, this message translates to:
-  /// **'右寄せ'**
+  /// In en, this message translates to:
+  /// **'Right'**
   String get alignRight;
 
   /// No description provided for @showPreview.
   ///
-  /// In ja, this message translates to:
-  /// **'プレビュー表示'**
+  /// In en, this message translates to:
+  /// **'Show preview'**
   String get showPreview;
 
   /// No description provided for @preview.
   ///
-  /// In ja, this message translates to:
-  /// **'プレビュー'**
+  /// In en, this message translates to:
+  /// **'Preview'**
   String get preview;
 
   /// No description provided for @close.
   ///
-  /// In ja, this message translates to:
-  /// **'閉じる'**
+  /// In en, this message translates to:
+  /// **'Close'**
   String get close;
 
   /// No description provided for @previewError.
   ///
-  /// In ja, this message translates to:
-  /// **'プレビューの生成に失敗しました'**
+  /// In en, this message translates to:
+  /// **'Could not generate the preview'**
   String get previewError;
 
   /// No description provided for @custom.
   ///
-  /// In ja, this message translates to:
-  /// **'カスタム'**
+  /// In en, this message translates to:
+  /// **'Custom'**
   String get custom;
 
   /// No description provided for @customColor.
   ///
-  /// In ja, this message translates to:
-  /// **'カスタムカラー'**
+  /// In en, this message translates to:
+  /// **'Custom color'**
   String get customColor;
 
   /// No description provided for @apply.
   ///
-  /// In ja, this message translates to:
-  /// **'適用'**
+  /// In en, this message translates to:
+  /// **'Apply'**
   String get apply;
 
   /// No description provided for @photosSaveError.
   ///
-  /// In ja, this message translates to:
-  /// **'写真アプリへの保存に失敗しました。'**
+  /// In en, this message translates to:
+  /// **'Could not save the image to Photos.'**
   String get photosSaveError;
 
   /// No description provided for @platformSaveUnsupported.
   ///
-  /// In ja, this message translates to:
-  /// **'このプラットフォームではファイル保存に対応していません。'**
+  /// In en, this message translates to:
+  /// **'Saving files is not supported on this platform.'**
   String get platformSaveUnsupported;
 
   /// No description provided for @presetSaved.
   ///
-  /// In ja, this message translates to:
-  /// **'プリセット「{name}」を保存しました'**
+  /// In en, this message translates to:
+  /// **'Saved preset “{name}”.'**
   String presetSaved(String name);
 
   /// No description provided for @presetDeleted.
   ///
-  /// In ja, this message translates to:
-  /// **'プリセット「{name}」を削除しました'**
+  /// In en, this message translates to:
+  /// **'Deleted preset “{name}”.'**
   String presetDeleted(String name);
 
   /// No description provided for @presetApplied.
   ///
-  /// In ja, this message translates to:
-  /// **'プリセット「{name}」を適用しました'**
+  /// In en, this message translates to:
+  /// **'Applied preset “{name}”.'**
   String presetApplied(String name);
 
   /// No description provided for @imagePickError.
   ///
-  /// In ja, this message translates to:
-  /// **'画像選択に失敗しました: {error}'**
+  /// In en, this message translates to:
+  /// **'Could not select the image: {error}'**
   String imagePickError(String error);
 
   /// No description provided for @imageSaved.
   ///
-  /// In ja, this message translates to:
-  /// **'画像を保存しました: {path}'**
+  /// In en, this message translates to:
+  /// **'Image saved: {path}'**
   String imageSaved(String path);
 
   /// No description provided for @imageSaveError.
   ///
-  /// In ja, this message translates to:
-  /// **'PNGは生成しましたが、保存に失敗しました: {error}'**
+  /// In en, this message translates to:
+  /// **'The PNG was generated, but could not be saved: {error}'**
   String imageSaveError(String error);
 
   /// No description provided for @imageGenerateError.
   ///
-  /// In ja, this message translates to:
-  /// **'画像生成に失敗しました: {error}'**
+  /// In en, this message translates to:
+  /// **'Could not generate the image: {error}'**
   String imageGenerateError(String error);
 
   /// No description provided for @notchSize.
   ///
-  /// In ja, this message translates to:
-  /// **'仮想ノッチサイズ: {value}'**
+  /// In en, this message translates to:
+  /// **'Virtual notch size: {value}'**
   String notchSize(String value);
 
   /// No description provided for @deviceSize.
   ///
-  /// In ja, this message translates to:
-  /// **'端末画像サイズ: {value}'**
+  /// In en, this message translates to:
+  /// **'Device image size: {value}'**
   String deviceSize(String value);
 
   /// No description provided for @fontSize.
   ///
-  /// In ja, this message translates to:
-  /// **'フォントサイズ: {value}'**
+  /// In en, this message translates to:
+  /// **'Font size: {value}'**
   String fontSize(String value);
 
   /// No description provided for @lineHeight.
   ///
-  /// In ja, this message translates to:
-  /// **'行間: {value}'**
+  /// In en, this message translates to:
+  /// **'Line height: {value}'**
   String lineHeight(String value);
 
   /// No description provided for @letterSpacing.
   ///
-  /// In ja, this message translates to:
-  /// **'文字間隔: {value}'**
+  /// In en, this message translates to:
+  /// **'Letter spacing: {value}'**
   String letterSpacing(String value);
 
   /// No description provided for @photosLocation.
   ///
-  /// In ja, this message translates to:
-  /// **'iPhoneの写真アプリ (assetId: {assetId})'**
+  /// In en, this message translates to:
+  /// **'Photos on iPhone (assetId: {assetId})'**
   String photosLocation(String assetId);
 
   /// No description provided for @colorWhite.
   ///
-  /// In ja, this message translates to:
+  /// In en, this message translates to:
   /// **'White'**
   String get colorWhite;
 
   /// No description provided for @colorBlack.
   ///
-  /// In ja, this message translates to:
+  /// In en, this message translates to:
   /// **'Black'**
   String get colorBlack;
 
   /// No description provided for @colorSky.
   ///
-  /// In ja, this message translates to:
+  /// In en, this message translates to:
   /// **'Sky'**
   String get colorSky;
 
   /// No description provided for @colorNavy.
   ///
-  /// In ja, this message translates to:
+  /// In en, this message translates to:
   /// **'Navy'**
   String get colorNavy;
 
   /// No description provided for @colorTeal.
   ///
-  /// In ja, this message translates to:
+  /// In en, this message translates to:
   /// **'Teal'**
   String get colorTeal;
 
   /// No description provided for @colorGreen.
   ///
-  /// In ja, this message translates to:
+  /// In en, this message translates to:
   /// **'Green'**
   String get colorGreen;
 
   /// No description provided for @colorAmber.
   ///
-  /// In ja, this message translates to:
+  /// In en, this message translates to:
   /// **'Amber'**
   String get colorAmber;
 
   /// No description provided for @colorRose.
   ///
-  /// In ja, this message translates to:
+  /// In en, this message translates to:
   /// **'Rose'**
   String get colorRose;
 
   /// No description provided for @colorPurple.
   ///
-  /// In ja, this message translates to:
+  /// In en, this message translates to:
   /// **'Purple'**
   String get colorPurple;
 
   /// No description provided for @colorOrange.
   ///
-  /// In ja, this message translates to:
+  /// In en, this message translates to:
   /// **'Orange'**
   String get colorOrange;
 }
